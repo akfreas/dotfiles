@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomDataFormatters
+   version = "1.0">
+   <SummaryFormatters>
+      <SummaryFormatter
+         formatString = "{(NSArray *)[(MKMapView *)$VAR annotations]}:s"
+         type = "MKMapView *">
+      </SummaryFormatter>
+   </SummaryFormatters>
+</CustomDataFormatters>

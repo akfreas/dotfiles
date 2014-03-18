@@ -1,0 +1,28 @@
+[color]
+	ui = true
+[user]
+	name = Alex Freas
+	email = akfreas@gmail.com
+[mergetool]
+	keepBackup = true
+[color]
+	ui = true
+    diff = true
+[color "status"]
+    added = green
+    changed = red
+    untracked = yellow
+[alias]
+    lg1 = log --graph --pretty=short -w --format=format:'%C(bold blue)%h %C(reset) %C(6)%cr%C(reset) - %C(8)%an %C(2)%d %C(reset)%s'
+    
+    lg2 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%cD%C(reset) %C(bold green)(%cr)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %cn%C(reset)' --abbrev-commit
+    lg = !"git lg1"
+
+[core]
+	excludesfile = ~/.gitignore 
+[credential]
+	helper = osxkeychain
+[push]
+	default = current
+[diff]
+	tool = vimdiff
