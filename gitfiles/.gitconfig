@@ -1,8 +1,8 @@
 [color]
 	ui = true
 [user]
-	name = Alex Freas
-	email = akfreas@gmail.com
+	name = Alexander Freas
+	email = alex@komoot.de
 [mergetool]
 	keepBackup = true
 [color]
@@ -19,10 +19,19 @@
     lg = !"git lg1"
 
 [core]
-	excludesfile = ~/.gitignore 
+	excludesfile = /Users/akfreas/.gitignore_global
 [credential]
 	helper = osxkeychain
 [push]
 	default = current
 [diff]
-	tool = vimdiff
+	tool = opendiff
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f

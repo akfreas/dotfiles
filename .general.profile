@@ -3,7 +3,6 @@ alias gril='grep -ril'
 alias hf='history | grep -i'
 alias rp="ps axwww | grep -i"
 alias grep="grep --color=always"
-alias sr="source ~/.bash_profile && source ~/.zshrc"
 alias srp="source bin/activate > /dev/null; source ../bin/activate > /dev/null;"
 alias srp="source bin/activate"
 alias pb="pbcopy"
@@ -15,8 +14,8 @@ alias cppvk="pb < ~/.ssh/id_rsa"
 #### Filesystem Actions #####
 #############################
 
-alias cd='pushd > /dev/null'
-alias cdd='popd > /dev/null'
+#alias cd='pushd > /dev/null'
+#alias cdd='popd > /dev/null'
 alias up="cd .."
 alias desk='cd ~/Desktop'
 alias down='cd ~/Downloads'
@@ -58,8 +57,8 @@ alias gpos='git push origin socialize'
 alias gpod='git push origin develop'
 alias gpo='git push origin -u'
 alias gpl='git pull origin'
-alias gcam='clean_localhost; git commit -am'
-alias gcm="clean_localhost; git commit -m"
+alias gcam='git commit -am'
+alias gcm="git commit -m"
 alias gst="git stash"
 alias gsa="git stash apply"
 alias gsl="git stash list"

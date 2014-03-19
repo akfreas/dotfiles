@@ -1,11 +1,11 @@
-function clean_localhost () {
+function clean_localhost ()
     for f in `find . -type f -name "*Info.plist" -exec grep -l "localhost:8080" {} ";"`; do
         sed -i "" "s/localhost:8080/ha-testing.agilexhealth.com:8080/g" $f;
         echo "Cleaned up $f";
     done;
-}
+end
 
-function find_replace() {
+function find_replace()
     FILES_MOVED=[0]=""
     for f in `find . -type f  -exec grep -l $1 {} ";"`; do
         sed -i "" "s/$1/$2/g" $f;
@@ -23,9 +23,9 @@ function find_replace() {
    done; 
    echo $x
    echo $FILES_MOVED
-}
+end
 
-function jirabranch() {
+function jirabranch()
     for b in `git branch -r`;
          do echo -n "$b   ";
          i=`echo $b | awk '/origin\/feature\/.*/{gsub(/origin\/feature\//, ""); print}'`
@@ -36,7 +36,7 @@ function jirabranch() {
           fi;
            
     done;
-}
+end
 
 ROOT_DIR="$HOME/root"  # your target dir
 FILTER_FILE="$HOME/filter.sed"  # the sed script for renaming
@@ -65,22 +65,3 @@ while IFS= read -r -d $'\0' DIR_NAME; do
     cd - > /dev/null         # back to original dir. Suppress stdout
 done < <(find $ROOT_DIR -depth -type d -print0) # get only dirs
 
-#'BRANCH_STACK[0]=""
-#function checkout() {
-#    
-#    if [ "$1" != "" ]; then
-#        {BRANCH_STACK[${#BRANCH_STACK[@]}]}={BRANCH_STACK[0]};
-#            for index in {1..${#BRANCH_STACK[@]}+1}; do
-#                {BRANCH_STACK[index]}={BRANCH_STACK[index-1]}
-#            done;
-#            {BRANCH_STACK[0]}=$1;
-#            git checkout ${BRANCH_STACK[0]};
-#
-#    }
-#'
-
-
-
-function cpy() { 
-    eval $1
-} 

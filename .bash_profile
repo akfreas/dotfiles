@@ -1,29 +1,33 @@
-export DROPBOX_HOME=~/Dropbox
-export BASH_PROFILE_HOME=$DROPBOX_HOME/bash
-export PATH=/usr/local/bin:$HOME/.rbenv/bin:$PATH
+set -x BASH_PROFILE_HOME $HOME/dotfiles
+set -x PATH /usr/local/bin:$HOME/.rbenv/bin:$PATH
 
-export SCRATCH=$BASH_PROFILE_HOME/.scratch.profile
-export COMBINED_PROFILE=$BASH_PROFILE_HOME/.zshrc
-export GENERAL_PROFILE=$BASH_PROFILE_HOME/.general.profile
-export SASHIMIBLADE_PROFILE=$BASH_PROFILE_HOME/.sashimiblade.profile
-export VARIABLES=$BASH_PROFILE_HOME/variables.sh
-export FUNCTIONS=$BASH_PROFILE_HOME/functions.sh
+set -x SCRATCH $BASH_PROFILE_HOME/.scratch.profile
+set -x COMBINED_PROFILE $BASH_PROFILE_HOME/.zshrc
+set -x GENERAL_PROFILE $BASH_PROFILE_HOME/.general.profile
+set -x SASHIMIBLADE_PROFILE $BASH_PROFILE_HOME/.sashimiblade.profile
+set -x VARIABLES $BASH_PROFILE_HOME/variables.sh
+set -x FUNCTIONS $BASH_PROFILE_HOME/functions.sh
 
 source ~/Dropbox/bash/.colors
 source $GENERAL_PROFILE
 source $VARIABLES
 source $SASHIMIBLADE_PROFILE
-source $FUNCTIONS
 source $SCRATCH
 
-alias cpbp="pbcopy < $GENERAL_PROFILE"
+alias cpbp "pbcopy < $GENERAL_PROFILE"
 
-alias ebp='vi -f $COMBINED_PROFILE && source $COMBINED_PROFILE'
-alias ebpg='vi -f $GENERAL_PROFILE && source $COMBINED_PROFILE && echo "General profile sourced."'
-alias ebpv="vi -f $VARIABLES"
-alias ebpf="vi -f $FUNCTIONS"
-alias ebpc="vi -f $SCRATCH"
-alias ebpt="vi -f $TAXIMAGIC_PROFILE"
-alias ebps="vi -f $SASHIMIBLADE_PROFILE"
-eval "$(rbenv init -)"
+# Path to your oh-my-fish.
+set fish_path $HOME/.oh-my-fish
 
+# Theme
+set fish_theme robbyrussell
+
+# Which plugins would you like to load? (plugins can be found in ~/.oh-my-fish/plugins/*)
+# Custom plugins may be added to ~/.oh-my-fish/custom/plugins/
+# Example format: set fish_plugins autojump bundler
+
+# Path to your custom folder (default path is $FISH/custom)
+#set fish_custom $HOME/dotfiles/oh-my-fish
+
+# Load oh-my-fish configuration.
+. $fish_path/oh-my-fish.fish
