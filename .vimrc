@@ -18,6 +18,8 @@ set smartindent
 let mapleader = ","
 
 " Vundle config
+set shell=/bin/zsh
+filetype off
 set rtp+=~/.vim/bundle/vundle
 call vundle#rc()
 

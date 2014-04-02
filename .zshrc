@@ -36,26 +36,19 @@ export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
-export DROPBOX_HOME=~/Dropbox
-export BASH_PROFILE_HOME=$DROPBOX_HOME/bash
+export BASH_PROFILE_HOME=$HOME/dotfiles
 
-export SCRATCH=$BASH_PROFILE_HOME/.scratch.profile
 export COMBINED_PROFILE=$BASH_PROFILE_HOME/.bash_profile
-export TAXIMAGIC_PROFILE=$BASH_PROFILE_HOME/.taximagic_profile
 export GENERAL_PROFILE=$BASH_PROFILE_HOME/.general.profile
 export SASHIMIBLADE_PROFILE=$BASH_PROFILE_HOME/.sashimiblade.profile
-export CARPE_PROFILE=$BASH_PROFILE_HOME/.carpe.profile
 export VARIABLES=$BASH_PROFILE_HOME/variables.sh
 export FUNCTIONS=$BASH_PROFILE_HOME/functions.sh
 
-source ~/Dropbox/bash/.colors
+source $HOME/dotfiles/.colors
 source $GENERAL_PROFILE
-source $TAXIMAGIC_PROFILE
-source $CARPE_PROFILE
 source $VARIABLES
 source $SASHIMIBLADE_PROFILE
 source $FUNCTIONS
-source $SCRATCH
 
 alias cpbp="pbcopy < $GENERAL_PROFILE"
 
@@ -107,6 +100,3 @@ export MYSQL_PS1="\v \u@\h:\p (\d)>"
 
 ### Added by the Heroku Toolbelt
 export PATH="/usr/local/heroku/bin:$PATH"
-
-# added by travis gem
-source /Users/akfreas/.travis/travis.sh
