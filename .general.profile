@@ -9,6 +9,8 @@ alias pb="pbcopy"
 alias pbp="pbpaste"
 alias cppk="pb < ~/.ssh/id_rsa.pub"
 alias cppvk="pb < ~/.ssh/id_rsa"
+alias notifyme="osascript -e 'display notification \"Task finished!\" with title \"Hooray!\"'"
+
 
 #############################
 #### Filesystem Actions #####
@@ -29,6 +31,7 @@ alias foldersize="du -sh"
 alias cp='cp -r'
 alias ll='pwd; ls -Galhs'
 alias lll='CLICOLOR_FORCE=1 ls -Galsh | less -R'
+alias ramdisk='diskutil erasevolume HFS+ "ramdisk" `hdiutil attach -nomount ram://4194304`'
 
 ##################
 ##### XCode ######
@@ -49,7 +52,7 @@ alias ga='git add -A .'
 alias gco='git checkout'
 alias gcob='git checkout -b'
 alias gf='git fetch origin master'
-alias gplom='git pull origin master'
+alias gplom='gpl master'
 alias gplod='git pull origin develop'
 alias gbr='git branch'
 alias gpom='git push origin master'
@@ -66,10 +69,11 @@ alias gss="git stash show"
 alias gsho="git show"
 alias grhard="git reset --hard"
 alias gre="git reset"
-alias gcdfx="git clean -dfx"
+alias gcdf="git clean -df"
 alias gad="git add -A"
 alias gadp="gad --patch"
-alias gbj="jirabranch"
+alias gpa="STASH_COMMIT=`git stash create`;git reset --hard;gpl;git stash apply $STASH_COMMIT;"
+alias gbrd="git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname) %(committerdate) %(authorname)' | sed 's/refs\/heads\///g'"
 
 ##############
 ### Bash #####
@@ -94,3 +98,10 @@ alias ecdel='yes |knife ec2 server delete --purge'
 ############
 
 alias be='bundle exec'
+
+##############
+### Python ###
+##############
+
+
+

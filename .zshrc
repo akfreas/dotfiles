@@ -29,7 +29,7 @@ ZSH_THEME="robbyrussell"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(cap gem git github knife perl vagrant)
+#plugins=(cap gem git github knife perl vagrant)
 
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
@@ -37,6 +37,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
 export BASH_PROFILE_HOME=$HOME/dotfiles
+export LANG=en_US.UTF-8
 
 export COMBINED_PROFILE=$BASH_PROFILE_HOME/.bash_profile
 export GENERAL_PROFILE=$BASH_PROFILE_HOME/.general.profile
@@ -81,7 +82,7 @@ alias knife="nocorrect knife"
 eval "$(rbenv init -)"
 PATH=$HOME/.rbenv/shims:$PATH
 
-
+source /usr/local/bin/virtualenvwrapper.sh
 
 #PROMPT='[${_t}]${_u}@${_h} [${_red}$(git_prompt_info)${_rc} ${_red}$(git_prompt_short_sha)${_rc}] [${_magenta}$(rbenv_prompt_info)${_rc}] ${_v}
 #${_p}

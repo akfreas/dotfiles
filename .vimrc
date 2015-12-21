@@ -9,8 +9,8 @@ set number
 set nowrap
 
 " tabbing
-set tabstop=4
-set shiftwidth=4
+set tabstop=2
+set shiftwidth=2
 set expandtab
 
 "set cindent
@@ -82,6 +82,10 @@ map <C-l> <Esc>:tabNext<cr>
 nnoremap <F2> :set invpaste paste?<CR>
 set pastetoggle=<F2>
 set showmode
+
+
+set undofile
+set undodir=~/.vim/undodir
 
 
 
