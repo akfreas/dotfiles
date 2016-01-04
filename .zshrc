@@ -31,6 +31,7 @@ ZSH_THEME="robbyrussell"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 #plugins=(cap gem git github knife perl vagrant)
 
+alias vi=vim
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
 source $ZSH/oh-my-zsh.sh
@@ -79,18 +80,10 @@ _v="rv=%?"
 
 alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
+export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
-PATH=$HOME/.rbenv/shims:$PATH
 
 source /usr/local/bin/virtualenvwrapper.sh
-
-#PROMPT='[${_t}]${_u}@${_h} [${_red}$(git_prompt_info)${_rc} ${_red}$(git_prompt_short_sha)${_rc}] [${_magenta}$(rbenv_prompt_info)${_rc}] ${_v}
-#${_p}
-#'
-#
-#PROMPT='%{$fg_bold[red]%}➜ %{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%} [${_magenta}$(rbenv_prompt_info)${_rc}]  %{$(git_prompt_info)%{$fg_bold[blue]%}% %{$reset_color%} ${_v}'
-#PROMPT='%{$fg_bold[green]%}➜ %{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%} [${_magenta}$(rbenv_prompt_info)%{$_blue%}]%{$_rc%}  %{$fg_bold[blue]%}%{$(git_prompt_info)%{$_rc%} '
-
 
 #export EDITOR=emacs
 export DIFF_OPTIONS=-u

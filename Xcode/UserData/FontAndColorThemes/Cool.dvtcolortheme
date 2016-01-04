@@ -30,6 +30,40 @@
 	<string>0.496 0.496 0.378 1</string>
 	<key>DVTDebuggerInstructionPointerColor</key>
 	<string>0.12 0.31 0.34 1</string>
+	<key>DVTMarkupTextBackgroundColor</key>
+	<string>0.122745 0.118168 0.146246 1</string>
+	<key>DVTMarkupTextBorderColor</key>
+	<string>0.192926 0.188715 0.214546 1</string>
+	<key>DVTMarkupTextCodeFont</key>
+	<string>Monaco - 13.0</string>
+	<key>DVTMarkupTextEmphasisColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextEmphasisFont</key>
+	<string>.AppleSystemUIFontItalic - 13.0</string>
+	<key>DVTMarkupTextLinkColor</key>
+	<string>0.1 0.1 0.819 1</string>
+	<key>DVTMarkupTextLinkFont</key>
+	<string>.AppleSystemUIFont - 13.0</string>
+	<key>DVTMarkupTextNormalColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextNormalFont</key>
+	<string>.AppleSystemUIFont - 13.0</string>
+	<key>DVTMarkupTextOtherHeadingColor</key>
+	<string>0.843125 0.96023 0.882895 0.5</string>
+	<key>DVTMarkupTextOtherHeadingFont</key>
+	<string>.AppleSystemUIFont - 18.2</string>
+	<key>DVTMarkupTextPrimaryHeadingColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextPrimaryHeadingFont</key>
+	<string>.AppleSystemUIFont - 31.2</string>
+	<key>DVTMarkupTextSecondaryHeadingColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextSecondaryHeadingFont</key>
+	<string>.AppleSystemUIFont - 23.4</string>
+	<key>DVTMarkupTextStrongColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextStrongFont</key>
+	<string>.AppleSystemUIFontBold - 13.0</string>
 	<key>DVTSourceTextBackground</key>
 	<string>0.0464622 0.0414869 0.0720065 1</string>
 	<key>DVTSourceTextBlockDimBackgroundColor</key>
@@ -92,51 +126,51 @@
 	<key>DVTSourceTextSyntaxFonts</key>
 	<dict>
 		<key>xcode.syntax.attribute</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.character</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.comment</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.comment.doc</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.comment.doc.keyword</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.class</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.class.system</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.constant</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.constant.system</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.function</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.function.system</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.macro</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.macro.system</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.type</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.type.system</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.variable</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.identifier.variable.system</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.keyword</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.number</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.plain</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.preprocessor</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.string</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 		<key>xcode.syntax.url</key>
-		<string>Monaco - 14.0</string>
+		<string>Monaco - 12.0</string>
 	</dict>
 </dict>
 </plist>
