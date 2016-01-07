@@ -1,4 +1,4 @@
- "coloring
+"coloring
 colorscheme desert
 syntax on
 :hi LineNr ctermfg=blue ctermbg=black
@@ -9,34 +9,51 @@ set number
 set nowrap
 
 " tabbing
-set tabstop=2
-set shiftwidth=2
+set tabstop=4
+set shiftwidth=4
 set expandtab
 
 "set cindent
 set smartindent
 let mapleader = ","
 
+" enable system clipboard
+set clipboard=unnamed
+
 " Vundle config
-set shell=/bin/zsh
-filetype off
-set rtp+=~/.vim/bundle/vundle
-call vundle#rc()
+set nocompatible              " be iMproved, required
+filetype off                  " required
 
-Bundle 'gmarik/vundle'
+" Ignore
+:set wildignore+=*.o,*.ob,*.pyc
 
-Bundle 'vim-scripts/guicolorscheme.vim'
-Bundle 'scrooloose/nerdtree'
-Bundle 'saleh/vim-supertab'
-"Bundle 'vim-scripts/SearchComplete'
-Bundle 'vim-scripts/taglist.vim'
-Bundle 'scrooloose/nerdcommenter'
-Bundle 'scrooloose/syntastic'
-Bundle 'vim-scripts/mru.vim'
-Bundle 'mileszs/ack.vim.git'
-Bundle 'vim-scripts/jsbeautify.git'
-Bundle 'Valloric/YouCompleteMe'
-"Bundle 'davidhalter/jedi-vim'
+:set noswapfile
+
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'gmarik/Vundle.vim'
+
+Plugin 'vim-scripts/guicolorscheme.vim'
+Plugin 'scrooloose/nerdtree'
+Plugin 'saleh/vim-supertab'
+Plugin 'bling/vim-airline'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'wincent/command-t'
+
+
+"Plugin 'vim-scripts/SearchComplete'
+Plugin 'vim-scripts/taglist.vim'
+Plugin 'scrooloose/nerdcommenter'
+Plugin 'scrooloose/syntastic'
+Plugin 'vim-scripts/mru.vim'
+Plugin 'mileszs/ack.vim.git'
+Plugin 'vim-scripts/jsbeautify.git'
+Plugin 'Valloric/YouCompleteMe'
+Plugin 'minibufexpl.vim'
+"Plugin 'davidhalter/jedi-vim'
+"
+call vundle#end()
 
 filetype plugin indent on
 " disable annoying bell
@@ -82,10 +99,6 @@ map <C-l> <Esc>:tabNext<cr>
 nnoremap <F2> :set invpaste paste?<CR>
 set pastetoggle=<F2>
 set showmode
-
-
-set undofile
-set undodir=~/.vim/undodir
 
 
 

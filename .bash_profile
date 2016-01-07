@@ -16,7 +16,7 @@ export  SASHIMIBLADE_PROFILE=$BASH_PROFILE_HOME/.sashimiblade.profile
 export  VARIABLES=$BASH_PROFILE_HOME/variables.sh
 export  FUNCTIONS=$BASH_PROFILE_HOME/functions.sh
 
-source ~/Dropbox/bash/.colors
+source ./.colors
 source $GENERAL_PROFILE
 source $VARIABLES
 source $SASHIMIBLADE_PROFILE

@@ -82,6 +82,7 @@ alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
+eval "$(thefuck --alias)"
 
 source /usr/local/bin/virtualenvwrapper.sh
 

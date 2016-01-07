@@ -104,4 +104,10 @@ alias be='bundle exec'
 ##############
 
 
+##############
+### Docker ###
+##############
+
+alias dockershell='bash --login "/Applications/Docker/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh"'
+
 
