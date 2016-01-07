@@ -58,8 +58,6 @@ alias ebp='vi -f $COMBINED_PROFILE && source $COMBINED_PROFILE'
 alias ebpg='vi -f $GENERAL_PROFILE && source $COMBINED_PROFILE && echo "General profile sourced."'
 alias ebpv="vi -f $VARIABLES"
 alias ebpf="vi -f $FUNCTIONS"
-alias ebpc="vi -f $SCRATCH"
-alias ebpt="vi -f $TAXIMAGIC_PROFILE"
 alias ebps="vi -f $SASHIMIBLADE_PROFILE"
 
 _red="%{$fg[red]%}"
