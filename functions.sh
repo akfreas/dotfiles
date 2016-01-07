@@ -23,3 +23,13 @@ function playsound() {
     afplay $BASH_PROFILE_HOME/assets/airhorn.mp3;
 
 }
+
+function alertme() {
+    if [ -n "$1" ];
+    then
+        ALERT_NAME=" $1";
+    else
+        ALERT_NAME="";
+    fi
+    curl -s -X POST -H "Content-Type: application/json" -d '{"value1":"'"$ALERT_NAME"'"}' https://maker.ifttt.com/trigger/long_running_desktop_task/with/key/kMri90fxHSN2xqBR-xQbC12C-iFWbXnXTbBVfVfvLjD  > /dev/null
+}
