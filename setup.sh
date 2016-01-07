@@ -2,7 +2,7 @@ SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 echo $SCRIPTPATH
 
 mv ~/.bash_profile ~/.bash_profile.bak
-ln -s $SCRIPTPATH/.bash_profile ~/.bash_profile
+ln -s $SCRIPTPATH/.zshrc ~/.bash_profile
 
 if [ -d "~/Library/Preferences/com.googlecode.iterm2.plist" ];
 then
@@ -17,8 +17,8 @@ then
 fi
 
 mv ~/.vimrc ~/.vimrc-bak
-ln -s $SCRIPTPATH/vim ~/.vim
-ln -s $SCRIPTPATH/vim/.vimrc ~/.vimrc
+ln -s $SCRIPTPATH/.vimrc ~/.vimrc
 
 mv ~/.gitconfig ~/.gitconfig.bak
 ln -s $SCRIPTPATH/git/.gitconfig ~/.gitconfig
+

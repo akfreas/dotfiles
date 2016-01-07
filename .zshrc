@@ -84,14 +84,10 @@ export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
 eval "$(thefuck --alias)"
 
-source /usr/local/bin/virtualenvwrapper.sh
 
 #export EDITOR=emacs
 export DIFF_OPTIONS=-u
-export MYSQL_PS1="\v \u@\h:\p (\d)>"
 
 #unsetopt correct_all
 
 
-### Added by the Heroku Toolbelt
-export PATH="/usr/local/heroku/bin:$PATH"

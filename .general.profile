@@ -72,7 +72,6 @@ alias gre="git reset"
 alias gcdf="git clean -df"
 alias gad="git add -A"
 alias gadp="gad --patch"
-alias gpa="STASH_COMMIT=`git stash create`;git reset --hard;gpl;git stash apply $STASH_COMMIT;"
 alias gbrd="git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname) %(committerdate) %(authorname)' | sed 's/refs\/heads\///g'"
 
 ##############
