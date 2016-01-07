@@ -2,7 +2,7 @@ SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 echo $SCRIPTPATH
 
 mv ~/.bash_profile ~/.bash_profile.bak
-ln -s $SCRIPTPATH/bash/.bash_profile ~/.bash_profile
+ln -s $SCRIPTPATH/.bash_profile ~/.bash_profile
 
 if [ -d "~/Library/Preferences/com.googlecode.iterm2.plist" ];
 then
