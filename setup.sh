@@ -36,14 +36,30 @@ wget -O - https://raw.githubusercontent.com/nvbn/thefuck/master/install.sh | sh 
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
 
-    sudo apt-get install cmake
-    sudo apt-get install ruby ruby-dev libncurses5-dev mercurial build-essential rake
+    sudo apt-get remove --yes vim vim-runtime gvim vim-tiny vim-common vim-gui-common
 
-    hg clone https://vim.googlecode.com/hg/ vim
+    sudo apt-get install --yes rbenv
+    sudo apt-get install --yes checkinstall 
+    sudo apt-get install --yes cmake
+    sudo apt-get install --yes ruby ruby-dev libncurses5-dev mercurial build-essential rake
+
+    cd `mktemp`
+    git clone https://github.com/vim/vim.git
     cd vim
-    ./configure --with-features=huge --enable-rubyinterp --enable-pythoninterp --prefix=$HOME
-    make
-    sudo make install
+    ./configure --with-features=huge \
+            --enable-multibyte \
+            --enable-rubyinterp \
+            --enable-pythoninterp \
+            --with-python-config-dir=/usr/lib/python2.7/config \
+            --enable-perlinterp \
+            --enable-luainterp \
+            --enable-gui=gtk2 --enable-cscope --prefix=/usr
+    make VIMRUNTIMEDIR=/usr/share/vim/vim74
+    sudo checkinstall
+    sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 1
+    sudo update-alternatives --set editor /usr/bin/vim
+    sudo update-alternatives --install /usr/bin/vi vi /usr/bin/vim 1
+    sudo update-alternatives --set vi /usr/bin/vim
 
 
 
