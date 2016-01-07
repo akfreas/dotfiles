@@ -1,6 +1,6 @@
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 echo $SCRIPTPATH
-exit
+
 mv ~/.bash_profile ~/.bash_profile.bak
 ln -s $SCRIPTPATH/bash/.bash_profile ~/.bash_profile
 
