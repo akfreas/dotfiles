@@ -81,6 +81,10 @@ alias knife="nocorrect knife"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
 eval "$(thefuck --alias)"
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME/Devel
+source /usr/local/bin/virtualenvwrapper.sh
+
 
 
 #export EDITOR=emacs
