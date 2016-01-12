@@ -29,7 +29,13 @@ alias lns='ln -s'
 alias home='cd ~'
 alias foldersize="du -sh"
 alias cp='cp -r'
-alias ll='pwd; ls -Galhs'
+
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    alias ll='pwd; ls --color -Galsh'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    alias ll='pwd; ls -Galhs'
+fi
 alias lll='CLICOLOR_FORCE=1 ls -Galsh | less -R'
 alias ramdisk='diskutil erasevolume HFS+ "ramdisk" `hdiutil attach -nomount ram://4194304`'
 
