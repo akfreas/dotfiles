@@ -4,6 +4,7 @@ syntax on
 :hi LineNr ctermfg=blue ctermbg=black
 
 set t_Co=256
+set backspace=2
 " etc
 set number
 set nowrap
@@ -81,8 +82,8 @@ map <F5> :TlistToggle<cr>
 let Tlist_Ctags_Cmd='/usr/local/bin/ctags'
 
 " text navigation key mappings
-map H <Esc>:bn<cr>
-map L <Esc>:bp<cr>
+map L <Esc>:bn<cr>
+map H <Esc>:bp<cr>
 map F <Esc><c-w><c-w><CR>
 inoremap jj <Esc>
 map - $
