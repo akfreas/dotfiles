@@ -6,6 +6,7 @@ syntax on
 set t_Co=256
 set backspace=2
 " etc
+set incsearch
 set number
 set nowrap
 
@@ -84,7 +85,7 @@ let Tlist_Ctags_Cmd='/usr/local/bin/ctags'
 " text navigation key mappings
 map L <Esc>:bn<cr>
 map H <Esc>:bp<cr>
-map F <Esc><c-w><c-w><CR>
+map F <Esc><c-w><c-w>
 inoremap jj <Esc>
 map - $
 
