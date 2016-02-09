@@ -64,12 +64,23 @@ if [[ "$unamestr" == 'Linux' ]]; then
     sudo apt-get install zsh
     sudo apt-get install git-core
 
+    # Docker setup
+
+    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >  /etc/apt/sources.list.d/docker.list
+    sudo apt-cache policy docker-engine
+    sudo apt-get update
+    sudo apt-get install --yes docker-engine 
+    sudo service docker start
+
+
+
 elif [[ "$unamestr" == 'Darwin' ]]; then
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
 wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
-sudo chsh -s `which zsh`
+sudo chsh -s `which zsh` `whoami`
 
 # Install Vim Plugins
 
