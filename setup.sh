@@ -20,7 +20,7 @@ mv ~/.vimrc ~/.vimrc-bak
 ln -s $SCRIPTPATH/.vimrc ~/.vimrc
 
 mv ~/.gitconfig ~/.gitconfig.bak
-ln -s $SCRIPTPATH/git/.gitconfig ~/.gitconfig
+ln -s $SCRIPTPATH/gitfiles/.gitconfig ~/.gitconfig
 
 mkdir -p ~/.vim/autoload ~/.vim/bundle && \
 curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
@@ -61,16 +61,28 @@ if [[ "$unamestr" == 'Linux' ]]; then
     sudo update-alternatives --install /usr/bin/vi vi /usr/bin/vim 1
     sudo update-alternatives --set vi /usr/bin/vim
 
-    apt-get install zsh
-    apt-get install git-core
-    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
-    chsh -s `which zsh`
-
-
-
-
-
+    sudo apt-get install zsh
+    sudo apt-get install git-core
 
 elif [[ "$unamestr" == 'Darwin' ]]; then
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
+
+wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+sudo chsh -s `which zsh`
+
+# Install Vim Plugins
+
+vim -c BundleInstall -c quitall
+cd ~/.vim/bundle/YouCompleteMe
+./install.py --clang-completer
+
+# Pip Install
+
+sudo pip install virtualenvwrapper
+
+# Docker Compose
+
+curl -L https://github.com/docker/compose/releases/download/1.6.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
