@@ -76,6 +76,7 @@ _h="${_yellow}%M${_rc}"
 _p="${_green}%/${_rc}"
 _v="rv=%?"
 
+alias node='nodejs'
 alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
 export PATH="$HOME/.rbenv/bin:$PATH"
