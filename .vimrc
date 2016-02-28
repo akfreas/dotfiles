@@ -33,6 +33,7 @@ filetype off                  " required
 
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
+let g:NERDTreeDirArrows=0
 
 Plugin 'gmarik/Vundle.vim'
 
