@@ -31,7 +31,6 @@ ZSH_THEME="robbyrussell"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 #plugins=(cap gem git github knife perl vagrant)
 
-alias vi=vim
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
 source $ZSH/oh-my-zsh.sh
