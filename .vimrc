@@ -54,8 +54,6 @@ Plugin 'vim-scripts/jsbeautify.git'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'nvie/vim-flake8'
 Plugin 'minibufexpl.vim'
-"Plugin 'davidhalter/jedi-vim'
-"
 call vundle#end()
 
 filetype plugin indent on
@@ -73,6 +71,7 @@ set hlsearch
 
 " NERD tree
 map <F12> :NERDTreeToggle<cr>
+map <F11> :TlistToggle<cr>
 let NERDTreeIgnore=['.vim$', '\~$', '.*\.pyc$', 'pip-log\.txt$', '.DS_Store$']
 let NERDTreeShowBookmarks=1
 let NERDTreeQuitOnOpen=1

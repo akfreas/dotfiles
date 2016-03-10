@@ -42,6 +42,7 @@ if [[ "$unamestr" == 'Linux' ]]; then
     sudo apt-get install --yes checkinstall 
     sudo apt-get install --yes cmake
     sudo apt-get install --yes ruby ruby-dev libncurses5-dev mercurial build-essential rake
+    sudo apt-get install --yes docker.io
 
     cd `mktemp`
     git clone https://github.com/vim/vim.git
@@ -61,8 +62,11 @@ if [[ "$unamestr" == 'Linux' ]]; then
     sudo update-alternatives --install /usr/bin/vi vi /usr/bin/vim 1
     sudo update-alternatives --set vi /usr/bin/vim
 
-    sudo apt-get install zsh
-    sudo apt-get install git-core
+    apt-get install zsh
+    apt-get install git-core
+    wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+    chsh -s `which zsh`
+
 
     # Docker setup
 
@@ -71,6 +75,7 @@ if [[ "$unamestr" == 'Linux' ]]; then
     sudo apt-cache policy docker-engine
     sudo apt-get update
     sudo apt-get install --yes docker-engine 
+    sudo usermod -aG docker ubuntu
     sudo service docker start
 
 

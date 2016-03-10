@@ -2,7 +2,7 @@
 	ui = true
 [user]
 	name = Alexander Freas
-	email = alex@komoot.de
+	email = akfreas@gmail.com
 [mergetool]
 	keepBackup = true
 [color]
@@ -26,12 +26,6 @@
 	default = current
 [diff]
 	tool = opendiff
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
-[mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
 [filter "media"]
 	clean = git-media-clean %f
 	smudge = git-media-smudge %f
