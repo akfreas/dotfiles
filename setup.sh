@@ -30,7 +30,6 @@ git clone git://github.com/tpope/vim-bundler.git
 
 
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-wget -O - https://raw.githubusercontent.com/nvbn/thefuck/master/install.sh | sh - && $0
 
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
@@ -85,6 +84,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
     sudo chsh -s `which zsh` `whoami`
+    brew install cmake wget ruby-build vim tree
 
 
 fi

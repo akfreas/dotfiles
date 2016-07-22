@@ -44,7 +44,7 @@ export GENERAL_PROFILE=$BASH_PROFILE_HOME/.general.profile
 export SASHIMIBLADE_PROFILE=$BASH_PROFILE_HOME/.sashimiblade.profile
 export VARIABLES=$BASH_PROFILE_HOME/variables.sh
 export FUNCTIONS=$BASH_PROFILE_HOME/functions.sh
-
+source .bashrc
 source $HOME/dotfiles/.colors
 source $GENERAL_PROFILE
 source $VARIABLES
@@ -75,6 +75,7 @@ _h="${_yellow}%M${_rc}"
 _p="${_green}%/${_rc}"
 _v="rv=%?"
 
+alias vi='vim'
 alias node='nodejs'
 alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
@@ -83,12 +84,13 @@ eval "$(rbenv init -)"
 eval "$(thefuck --alias)"
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Devel
+export VIRTUALENVWRAPPER_LOG_DIR=logs
 source /usr/local/bin/virtualenvwrapper.sh
 
 
-
-#export EDITOR=emacs
 export DIFF_OPTIONS=-u
+eval "$(docker-machine env default)"
+
 
 #unsetopt correct_all
 
