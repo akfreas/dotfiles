@@ -36,7 +36,7 @@ if [[ "$unamestr" == 'Linux' ]]; then
     sudo apt-get remove --yes vim vim-runtime gvim vim-tiny vim-common vim-gui-common vim-nox
 
 
-    cat ./apt-packages.txt | xargs sudo apt-get --yes --force-yes install
+    cat $SCRIPTPATH/apt-packages.txt | xargs sudo apt-get --yes --force-yes install
 
     cd ~
     git clone https://github.com/vim/vim.git
