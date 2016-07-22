@@ -1,7 +1,6 @@
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 echo $SCRIPTPATH
 
-sudo su 
 
 if [ -d "~/Library/Preferences/com.googlecode.iterm2.plist" ];
 then
