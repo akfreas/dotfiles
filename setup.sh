@@ -100,10 +100,8 @@ sudo pip install virtualenvwrapper
 
 # Docker Compose
 
-cd `mktemp`
 curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > ./docker-compose
 sudo mv docker-compose /usr/local/bin/docker-compose
-cd ~
 sudo chmod +x /usr/local/bin/docker-compose
 
 mv ~/.bash_profile ~/.bash_profile.bak
