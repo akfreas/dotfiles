@@ -84,8 +84,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
     sudo chsh -s `which zsh` `whoami`
     brew install cmake wget ruby-build vim tree
-
-
+    sudo xcode-select --install
 fi
 
 # Install Vim Plugins
