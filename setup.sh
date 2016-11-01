@@ -5,7 +5,7 @@ echo $SCRIPTPATH
 if [ -d "~/Library/Preferences/com.googlecode.iterm2.plist" ];
 then
     rm ~/Library/Preferences/com.googlecode.iterm2.plist
-    ln -s $SCRIPTPATH/iTerm/com.googlecode.iterm2.plist ~/Library/Preferences/com.googlecode.iterm2.plist
+    ln -s $SCRIPTPATH/com.googlecode.iterm2.plist ~/Library/Preferences/com.googlecode.iterm2.plist
 fi
 
 if [ -d "~/Library/Developer/Xcode/UserData" ];
