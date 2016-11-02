@@ -83,7 +83,10 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
     sudo chsh -s `which zsh` `whoami`
-    brew install cmake wget ruby-build vim tree
+    brew install cmake \
+        wget ruby-build \
+        vim tree \
+        rbenv thefuck docker-machine
     sudo xcode-select --install
 fi
 
