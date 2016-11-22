@@ -89,8 +89,6 @@ source /usr/local/bin/virtualenvwrapper.sh
 
 
 export DIFF_OPTIONS=-u
-eval "$(docker-machine env default)"
-
 
 #unsetopt correct_all
 
@@ -104,4 +102,5 @@ PERL_MM_OPT="INSTALL_BASE=/home/alex/perl5"; export PERL_MM_OPT;
 
 export LC_ALL=en_US.utf-8 
 export LANG="$LC_ALL" 
+export PS1='$(f_notifyme)'$PS1
 

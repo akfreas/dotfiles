@@ -54,6 +54,8 @@ Plugin 'vim-scripts/jsbeautify.git'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'nvie/vim-flake8'
 Plugin 'minibufexpl.vim'
+Plugin 'pangloss/vim-javascript'
+Plugin 'mxw/vim-jsx'
 call vundle#end()
 
 filetype plugin indent on
@@ -102,6 +104,8 @@ nnoremap <F2> :set invpaste paste?<CR>
 set pastetoggle=<F2>
 set showmode
 
+"Javascript Indentation
+let g:jsx_ext_required = 0
 
 
 "here is a more exotic version of my original Kwbd script

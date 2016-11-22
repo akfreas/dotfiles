@@ -9,7 +9,7 @@ alias pb="pbcopy"
 alias pbp="pbpaste"
 alias cppk="pb < ~/.ssh/id_rsa.pub"
 alias cppvk="pb < ~/.ssh/id_rsa"
-alias notifyme="osascript -e 'display notification \"Task finished!\" with title \"Hooray!\"'"
+alias notifyme="osascript ~/dotfiles/notifyme.osascript"
 
 
 #############################
@@ -115,5 +115,6 @@ alias be='bundle exec'
 
 alias dockershell='bash --login "/Applications/Docker/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh"'
 alias dc='docker-compose'
+alias dm='docker-machine'
 
 
