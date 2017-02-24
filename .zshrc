@@ -104,3 +104,4 @@ export LC_ALL=en_US.utf-8
 export LANG="$LC_ALL" 
 export PS1='$(f_notifyme)'$PS1
 
+export PATH="$HOME/.fastlane/bin:$PATH"

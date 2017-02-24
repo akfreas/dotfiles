@@ -1,27 +1,26 @@
-#!/bin/bash
-ROOT_DIR="$HOME/root"  # your target dir
-FILTER_FILE="$HOME/filter.sed"  # the sed script for renaming
+BACKUP_DIR='_backup';
+FILE_LIST=`find . -type f -not -path "*$BACKUP_DIR*"`
+mkdir -pv $BACKUP_DIR;
+while IFS= read -r line
+do
+    echo $line;
+  if ! [[ " $list " =~ " $line " ]] ; then
+      LC_ALL=C sed -i '' "s%$1%$2%g" "$line";
+  fi
+  if [[ $line == *"$1"* ]]; then
+      newfile=`echo $line | sed "s%$1%$2%g"`; 
+      mkdir -pv "`dirname "$newfile"`"; 
+      echo "Copying $line to $newfile";
+      cp "$line" "$newfile" 2> /dev/null;
+      mv "$line" $BACKUP_DIR 2> /dev/null;
+  fi;
 
-# custom rename function that uses $FILTER_FILE (via sed)
-function rename_using_filter {
-    CURRENT_NAME="$1"
-    NEW_NAME="$(echo $1 | sed -f $FILTER_FILE)"  # derive new name
-    if [ "$CURRENT_NAME" != "$NEW_NAME" ]; then  # rename if diff
-        mv "$CURRENT_NAME" "$NEW_NAME"
-    fi
-}
+  list='\.png \.ttf';
 
-# for each directory, starting from deepest first
-while IFS= read -r -d $'\0' DIR_NAME; do
-    cd "$DIR_NAME"           # go to target dir
 
-    # for each file/dir at this level
-    while IFS= read -r -d $'\0' FILE_NAME; do
-        if [ -f "$FILE_NAME" ]; then                # if it's a file
-            sed -i -f "$FILTER_FILE" "$FILE_NAME"   # replace content
-        fi
-        rename_using_filter "$FILE_NAME"  # rename it 
-    done < <(find . -maxdepth 1 -print0)
+  if [[ " $list " =~ " $line " ]] ; then
+      echo "$line matches $list";
+  fi
 
-    cd - > /dev/null         # back to original dir. Suppress stdout
-done < <(find $ROOT_DIR -depth -type d -print0) # get only dirs
+
+done <<< "$FILE_LIST";
