@@ -3,12 +3,14 @@ TARGET_DIR=$1;
 SEARCH_STRING=$2;
 REPLACE_STRING=$3;
 
-FILE_LIST=`find $TARGET_DIR -type f -not -path "*$BACKUP_DIR*"`
+IGNORE_LIST='\.png \.ttf';
+
+FILE_LIST=`find $TARGET_DIR -type f -not -path "*.git*" -not -path "*$BACKUP_DIR*"`
 mkdir -pv $BACKUP_DIR;
 while IFS= read -r line
 do
-  echo $line;
-  if ! [[ " $list " =~ " $line " ]] ; then
+  if ! [[ " $IGNORE_LIST " =~ " $line " ]] && grep -q $SEARCH_STRING "$line"; then
+      echo "Replace $SEARCH_STRING with $REPLACE_STRING in $line";
       LC_ALL=C sed -i '' "s%$SEARCH_STRING%$REPLACE_STRING%g" "$line";
   fi
   if [[ $line == *"$SEARCH_STRING"* ]]; then
@@ -18,13 +20,5 @@ do
       cp "$line" "$newfile" 2> /dev/null;
       mv "$line" $BACKUP_DIR 2> /dev/null;
   fi;
-
-  list='\.png \.ttf';
-
-
-  if [[ " $list " =~ " $line " ]] ; then
-      echo "$line matches $list";
-  fi
-
 
 done <<< "$FILE_LIST";
