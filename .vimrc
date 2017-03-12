@@ -27,9 +27,9 @@ set nocompatible              " be iMproved, required
 filetype off                  " required
 
 " Ignore
-:set wildignore+=*.o,*.ob,*.pyc
-
-:set noswapfile
+set wildignore+=*.o,*.ob,*.pyc
+set wildignore+=.o,.obj,.git,**/bower_components/**,**/node_modules/** 
+set noswapfile
 
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
