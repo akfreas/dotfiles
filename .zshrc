@@ -105,3 +105,4 @@ export LANG="$LC_ALL"
 export PS1='$(f_notifyme)'$PS1
 
 export GOPATH="$HOME/go"
+export PATH="$HOME/.fastlane/bin:$PATH"

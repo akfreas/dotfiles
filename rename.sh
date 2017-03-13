@@ -1,27 +1,24 @@
-#!/bin/bash
-ROOT_DIR="$HOME/root"  # your target dir
-FILTER_FILE="$HOME/filter.sed"  # the sed script for renaming
+BACKUP_DIR='_backup';
+TARGET_DIR=$1;
+SEARCH_STRING=$2;
+REPLACE_STRING=$3;
 
-# custom rename function that uses $FILTER_FILE (via sed)
-function rename_using_filter {
-    CURRENT_NAME="$1"
-    NEW_NAME="$(echo $1 | sed -f $FILTER_FILE)"  # derive new name
-    if [ "$CURRENT_NAME" != "$NEW_NAME" ]; then  # rename if diff
-        mv "$CURRENT_NAME" "$NEW_NAME"
-    fi
-}
+IGNORE_LIST='\.png \.ttf';
 
-# for each directory, starting from deepest first
-while IFS= read -r -d $'\0' DIR_NAME; do
-    cd "$DIR_NAME"           # go to target dir
+FILE_LIST=`find $TARGET_DIR -type f -not -path "*.git*" -not -path "*$BACKUP_DIR*"`
+mkdir -pv $BACKUP_DIR;
+while IFS= read -r line
+do
+  if ! [[ " $IGNORE_LIST " =~ " $line " ]] && grep -q $SEARCH_STRING "$line"; then
+      echo "Replace $SEARCH_STRING with $REPLACE_STRING in $line";
+      LC_ALL=C sed -i '' "s%$SEARCH_STRING%$REPLACE_STRING%g" "$line";
+  fi
+  if [[ $line == *"$SEARCH_STRING"* ]]; then
+      newfile=`echo $line | sed "s%$SEARCH_STRING%$REPLACE_STRING%g"`; 
+      mkdir -pv "`dirname "$newfile"`"; 
+      echo "Copying $line to $newfile";
+      cp "$line" "$newfile" 2> /dev/null;
+      mv "$line" $BACKUP_DIR 2> /dev/null;
+  fi;
 
-    # for each file/dir at this level
-    while IFS= read -r -d $'\0' FILE_NAME; do
-        if [ -f "$FILE_NAME" ]; then                # if it's a file
-            sed -i -f "$FILTER_FILE" "$FILE_NAME"   # replace content
-        fi
-        rename_using_filter "$FILE_NAME"  # rename it 
-    done < <(find . -maxdepth 1 -print0)
-
-    cd - > /dev/null         # back to original dir. Suppress stdout
-done < <(find $ROOT_DIR -depth -type d -print0) # get only dirs
+done <<< "$FILE_LIST";
