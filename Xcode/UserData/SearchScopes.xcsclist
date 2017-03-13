@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SearchScopes
+   version = "1.1">
+   <Scope
+      name = "No Tests"
+      predicate = "name MATCHES &quot;\\b(?:(?![tT]est)\\w)+\\b.(h|swift|m)&quot;"
+      uuid = "C0D44335-9EC6-4641-82C3-5C58212979B4">
+   </Scope>
+   <Scope
+      name = "Only Tests"
+      predicate = "name MATCHES &quot;.*([Tt]est).*&quot;"
+      uuid = "802F8170-711D-44B7-BC1B-EC19785C9FA7">
+   </Scope>
+   <Scope
+      name = "My Scope"
+      predicate = "location_workspace == &quot;&quot;"
+      uuid = "75A6B1E4-94E9-4D24-9087-CBBB11B576BC">
+   </Scope>
+   <Scope
+      name = "Swift Files"
+      predicate = "name.pathExtension == &quot;swift&quot;"
+      uuid = "5FA71B7D-FE72-4342-9C1B-0BB6208EF936">
+   </Scope>
+   <Scope
+      name = "Strings"
+      predicate = "name.pathExtension == &quot;strings&quot;"
+      uuid = "B125ED9F-799D-4E64-87BD-F6B2F82D64BB">
+   </Scope>
+   <Scope
+      name = "Code"
+      predicate = "name.pathExtension MATCHES &quot;m|swift&quot;"
+      uuid = "1E89B1ED-8D85-4479-B197-F07104F93F05">
+   </Scope>
+   <Scope
+      name = "Swift Files - No Tests"
+      predicate = "name.pathExtension == &quot;swift&quot; AND name MATCHES &quot;\\b(?:(?![tT]est)\\w)+\\b.(h|swift|m)&quot;"
+      uuid = "5EF26974-7F9E-4B66-9EC0-B2A9DCDB168A">
+   </Scope>
+   <Scope
+      name = "NIB Files"
+      predicate = "name.pathExtension == &quot;xib&quot;"
+      uuid = "DACF312A-72B1-4A37-83BC-13C91265E66F">
+   </Scope>
+   <Scope
+      name = "Not Code"
+      predicate = "name.pathExtension != &quot;h&quot; AND name.pathExtension != &quot;m&quot; AND name.pathExtension != &quot;swift&quot;"
+      uuid = "E783FA20-6247-4B62-9156-CAAD992A5D50">
+   </Scope>
+   <Scope
+      name = "Non-Swift"
+      predicate = "name.pathExtension != &quot;swift&quot;"
+      uuid = "2C2458A8-958F-4BF6-AE57-7CAEE4F34616">
+   </Scope>
+</SearchScopes>

@@ -20,6 +20,12 @@ function alertme() {
     curl -s -X POST -H "Content-Type: application/json" -d '{"value1":"'"$ALERT_NAME"'"}' https://maker.ifttt.com/trigger/long_running_desktop_task/with/key/kMri90fxHSN2xqBR-xQbC12C-iFWbXnXTbBVfVfvLjD  > /dev/null
 }
 
+function ddd {
+    echo "Cleaning derived data...";
+    setopt localoptions rmstarsilent;
+    rm -rf ~/Library/Developer/Xcode/DerivedData/ 2> /dev/null;
+}
+
 function f_notifyme {
   LAST_EXIT_CODE=$?
   CMD=$(fc -ln -1)
