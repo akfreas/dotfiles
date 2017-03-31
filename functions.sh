@@ -24,6 +24,7 @@ function ddd {
     echo "Cleaning derived data...";
     setopt localoptions rmstarsilent;
     rm -rf ~/Library/Developer/Xcode/DerivedData/ 2> /dev/null;
+    echo "Done."
 }
 
 function f_notifyme {
