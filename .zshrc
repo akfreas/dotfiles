@@ -106,3 +106,7 @@ export PS1='$(f_notifyme)'$PS1
 
 export GOPATH="$HOME/go"
 export PATH="$HOME/.fastlane/bin:$PATH"
+
+export PAGER=/usr/local/bin/vimpager
+alias less=$PAGER
+alias zless=$PAGER
