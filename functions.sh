@@ -11,13 +11,23 @@ function playsound() {
 upup(){ DEEP=$1; [ -z "${DEEP}" ] && { DEEP=1; }; for i in $(seq 1 ${DEEP}); do cd ../; done; }
 
 function alertme() {
-    if [ -n "$1" ];
+
+    LAST_EXIT_CODE=$?
+    CMD=$(fc -ln -1)
+    # No point in waiting for the command to complete
+
+    if [ $LAST_EXIT_CODE -eq 0 ]
     then
-        ALERT_NAME=" $1";
+        VERB="failed";
+        ALERT_NAME="$CMD failed with code $LAST_EXIT_CODE";
     else
-        ALERT_NAME="";
+        VERB="succeeded"
+        ALERT_NAME="$CMD succeeded";
     fi
-    curl -s -X POST -H "Content-Type: application/json" -d '{"value1":"'"$ALERT_NAME"'"}' https://maker.ifttt.com/trigger/long_running_desktop_task/with/key/kMri90fxHSN2xqBR-xQbC12C-iFWbXnXTbBVfVfvLjD  > /dev/null
+
+    JSON='{"value1":"'"$CMD"'","value2":"'"$VERB"'","value3":"'"$LAST_EXIT_CODE"'"}';
+    echo $JSON;
+    curl -s -X POST -H "Content-Type: application/json" -d $JSON https://maker.ifttt.com/trigger/long_running_desktop_task/with/key/kMri90fxHSN2xqBR-xQbC12C-iFWbXnXTbBVfVfvLjD  > /dev/null
 }
 
 function ddd {

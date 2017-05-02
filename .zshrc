@@ -44,7 +44,7 @@ export GENERAL_PROFILE=$BASH_PROFILE_HOME/.general.profile
 export SASHIMIBLADE_PROFILE=$BASH_PROFILE_HOME/.sashimiblade.profile
 export VARIABLES=$BASH_PROFILE_HOME/variables.sh
 export FUNCTIONS=$BASH_PROFILE_HOME/functions.sh
-source .bashrc
+source .bashrc 2> /dev/null
 source $HOME/dotfiles/.colors
 source $GENERAL_PROFILE
 source $VARIABLES
@@ -107,6 +107,5 @@ export PS1='$(f_notifyme)'$PS1
 export GOPATH="$HOME/go"
 export PATH="$HOME/.fastlane/bin:$PATH"
 
-export PAGER=/usr/local/bin/vimpager
 alias less=$PAGER
 alias zless=$PAGER
