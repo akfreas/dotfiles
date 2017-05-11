@@ -54,7 +54,7 @@ alias gs='git status'
 alias gl='git lg1'
 alias gd='git diff --word-diff'
 alias gdst='gd --staged'
-alias ga='git add -A .'
+alias gaa='git add -A .'
 alias gco='git checkout'
 alias gcob='git checkout -b'
 alias gf='git fetch origin master'
@@ -76,7 +76,7 @@ alias gsho="git show"
 alias grhard="git reset --hard"
 alias gre="git reset"
 alias gcdf="git clean -df"
-alias gad="git add -A"
+alias gad="git add -u"
 alias gadp="gad --patch"
 alias gbrd="git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname) %(committerdate) %(authorname)' | sed 's/refs\/heads\///g'"
 
