@@ -1,6 +1,5 @@
 alias c='clear'
 alias gril='grep -ril'
-alias hf='history | grep -i'
 alias rp="ps axwww | grep -i"
 alias grep="grep --color=always"
 alias srp="source bin/activate > /dev/null; source ../bin/activate > /dev/null;"

@@ -3,9 +3,11 @@ function find_replace() {
 }
 
 function playsound() {
-
     afplay $BASH_PROFILE_HOME/assets/airhorn.mp3;
+}
 
+function hf() {
+    history | grep -i $1 | tail -r | less
 }
 
 upup(){ DEEP=$1; [ -z "${DEEP}" ] && { DEEP=1; }; for i in $(seq 1 ${DEEP}); do cd ../; done; }
