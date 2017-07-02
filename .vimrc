@@ -36,6 +36,7 @@ call vundle#begin()
 let g:NERDTreeDirArrows=0
 
 Plugin 'gmarik/Vundle.vim'
+Plugin 'tpope/vim-fugitive'
 
 Plugin 'vim-scripts/guicolorscheme.vim'
 Plugin 'scrooloose/nerdtree'
