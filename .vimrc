@@ -58,6 +58,9 @@ Plugin 'pangloss/vim-javascript'
 Plugin 'mxw/vim-jsx'
 call vundle#end()
 
+map J 20j
+map K 20k
+
 filetype plugin indent on
 " disable annoying bell
 set visualbell t_vb=
@@ -85,8 +88,8 @@ map <F5> :TlistToggle<cr>
 let Tlist_Ctags_Cmd='/usr/local/bin/ctags'
 
 " text navigation key mappings
-map L <Esc>:bn<cr>
-map H <Esc>:bp<cr>
+map L <Esc>:up<Esc>:bn<cr>
+map H <<Esc>:up<Esc>:bp<cr>
 map F <Esc><c-w><c-w>
 inoremap jj <Esc>
 map - $

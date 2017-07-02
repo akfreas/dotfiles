@@ -1,5 +1,11 @@
 alias c='clear'
-alias gril='grep -ril'
+function gril() {
+    grep -ril $0 . 
+}
+
+function gri() {
+    grep -ri $0 .
+}
 alias rp="ps axwww | grep -i"
 alias grep="grep --color=always"
 alias srp="source bin/activate > /dev/null; source ../bin/activate > /dev/null;"
