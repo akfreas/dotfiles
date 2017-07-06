@@ -48,9 +48,10 @@ alias ramdisk='diskutil erasevolume HFS+ "ramdisk" `hdiutil attach -nomount ram:
 ##### XCode ######
 ##################
 
-alias cleanderived="rm -rf ~/Library/Developer/Xcode/DerivedData/*"
 alias ox="open *.xcodeproj"
 alias ow="open *.xcworkspace"
+alias deriveddata="cd ~/Library/Developer/Xcode/DerivedData/"
+
 
 ###############
 ## Git Stuff ##
