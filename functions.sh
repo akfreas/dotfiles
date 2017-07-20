@@ -12,6 +12,27 @@ function hf() {
 
 upup(){ DEEP=$1; [ -z "${DEEP}" ] && { DEEP=1; }; for i in $(seq 1 ${DEEP}); do cd ../; done; }
 
+function gcoc() {
+    MATCHING=`git branch --list "*$1*"`;
+    NUM_MATCHES=`echo $MATCHING | wc -l`;
+
+    if [ $NUM_MATCHES -gt 1 ]
+    then
+        SAVEIFS=$IFS
+        IFS=$'\n'
+        #read -A BRANCHES <<< "${MATCHING}"
+        BRANCHES=(${=MATCHING})
+
+        select branch in "${BRANCHES[@]}"
+        do
+            git checkout `echo $branch | xargs`
+            break
+        done
+    else
+        git checkout $MATCHING
+    fi
+}
+
 function sendpush() {
 
     LAST_EXIT_CODE=$?
