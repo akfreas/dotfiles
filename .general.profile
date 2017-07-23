@@ -1,10 +1,10 @@
 alias c='clear'
 function gril() {
-    grep -ril $0 . 
+    grep -ril $1 . 
 }
 
 function gri() {
-    grep -ri $0 .
+    grep -ri $1 .
 }
 alias rp="ps axwww | grep -i"
 alias grep="grep --color=always"
