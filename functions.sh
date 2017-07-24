@@ -29,7 +29,7 @@ function gcoc() {
             break
         done
     else
-        git checkout $MATCHING
+        git checkout `echo $MATCHING | xargs`
     fi
 }
 
