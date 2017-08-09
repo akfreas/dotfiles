@@ -1,10 +1,10 @@
 alias c='clear'
 function gril() {
-    grep -ril $1 . 
+    grep -ril --exclude-dir=node_modules $1 . 
 }
 
 function gri() {
-    grep -ri $1 .
+    grep -ri --exclude-dir=node_modules $1 .
 }
 alias rp="ps axwww | grep -i"
 alias grep="grep --color=always"
