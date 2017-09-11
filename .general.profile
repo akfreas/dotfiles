@@ -15,6 +15,7 @@ alias pbp="pbpaste"
 alias cppk="pb < ~/.ssh/id_rsa.pub"
 alias cppvk="pb < ~/.ssh/id_rsa"
 alias notifyme="osascript ~/dotfiles/notifyme.osascript"
+alias ksdiff='/Applications/p4merge.app/Contents/Resources/launchp4merge'
 
 
 #############################
