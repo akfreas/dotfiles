@@ -13,13 +13,13 @@ function hf() {
 upup(){ DEEP=$1; [ -z "${DEEP}" ] && { DEEP=1; }; for i in $(seq 1 ${DEEP}); do cd ../; done; }
 
 function gcoc() {
-    MATCHING=`git branch --remote --list "*$1*"`;
+    MATCHING="$(git branch --list "*$1*")
+    $(git branch --list --remote "*$1*")";
     NUM_MATCHES=`echo $MATCHING | wc -l`;
     FINAL_MATCH=''
 
     if [ $NUM_MATCHES -gt 1 ]
     then
-        SAVEIFS=$IFS
         IFS=$'\n'
 
         BRANCHES=(${=MATCHING})
@@ -29,11 +29,15 @@ function gcoc() {
             FINAL_MATCH=$branch
             break
         done
-    else
+    elif [ $NUM_MATCHES -eq 1 ]
+    then
         FINAL_MATCH=$MATCHING
+    else
+        echo "No remote or local branch named $1";
     fi
 
-    git checkout `echo $FINAL_MATCH | sed "s/[[:space:]]*origin\///g"`
+    FORMATTED_MATCH=`echo $FINAL_MATCH | sed -E "s/[[:space:]]*(origin\/)?//g"`
+    git checkout $FORMATTED_MATCH
 
 }
 
