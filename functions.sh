@@ -10,6 +10,18 @@ function hf() {
     history | grep -i $1 | tail -r | less
 }
 
+function fn() {
+    find . -iname $1;
+}
+
+function asset_resize() {
+
+    f=$1
+    echo "$f -> ${f//@3x/@2x}, ${f//@3x/}"
+    convert "$f" -resize 66.66666% "${f//@3x/@2x}"
+    convert "$f" -resize 33.33333% "${f//@3x/}"
+}
+
 upup(){ DEEP=$1; [ -z "${DEEP}" ] && { DEEP=1; }; for i in $(seq 1 ${DEEP}); do cd ../; done; }
 
 function gcoc() {

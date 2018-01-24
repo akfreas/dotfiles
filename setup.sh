@@ -96,7 +96,7 @@ vim -c BundleInstall -c quitall
 cd ~/.vim/bundle/YouCompleteMe
 ./install.py --clang-completer
 
-pushd `mktemp -d`
+cd `mktemp -d`
 git clone git://github.com/rkitover/vimpager
 cd vimpager
 sudo make install
@@ -117,4 +117,4 @@ ln -s $SCRIPTPATH/.zshrc ~/.bash_profile
 
 mv ~/.zshrc ~/.zshrc.bak
 ln -s $SCRIPTPATH/.zshrc ~/.zshrc
-popd
+cd -
