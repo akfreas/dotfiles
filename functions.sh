@@ -16,10 +16,19 @@ function fn() {
 
 function asset_resize() {
 
-    f=$1
-    echo "$f -> ${f//@3x/@2x}, ${f//@3x/}"
-    convert "$f" -resize 66.66666% "${f//@3x/@2x}"
-    convert "$f" -resize 33.33333% "${f//@3x/}"
+    echo "starting"
+    echo "one: ${1}"
+    for f in $1
+    do
+        if ! [[ "@3x" =~ $f ]] then
+            new_filename="${f%.*}@3x.${f##*.}"
+            mv $f $new_filename;
+            f=$new_filename;
+        fi
+        echo "$f -> ${f//@3x/@2x}, ${f//@3x/}";
+        convert "$f" -resize 66.66666% "${f//@3x/@2x}";
+        convert "$f" -resize 33.33333% "${f//@3x/}";
+    done
 }
 
 upup(){ DEEP=$1; [ -z "${DEEP}" ] && { DEEP=1; }; for i in $(seq 1 ${DEEP}); do cd ../; done; }
