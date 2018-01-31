@@ -86,6 +86,7 @@ alias gadu="git add -u"
 alias gad="git add --all"
 alias gadp="gad --patch"
 alias gbrd="git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname) %(committerdate) %(authorname)' | sed 's/refs\/heads\///g'"
+alias gadt="git add -u"
 
 ##############
 ### Bash #####
