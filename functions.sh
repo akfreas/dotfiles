@@ -18,10 +18,12 @@ function asset_resize() {
 
     echo "starting"
     echo "one: ${1}"
-    for f in $1
+    IFS=$'\n'
+    for f in $(find . -name $1)
     do
         if ! [[ "@3x" =~ $f ]] then
-            new_filename="${f%.*}@3x.${f##*.}"
+            new_filename="${f%.*}@3x.${f##*.}";
+            echo "No @3x version to start with, renaming $f to $new_filename";
             mv $f $new_filename;
             f=$new_filename;
         fi
