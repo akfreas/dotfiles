@@ -16,9 +16,6 @@ function fn() {
 
 function asset_resize() {
 
-    echo "starting"
-    echo "one: ${1}"
-    IFS=$'\n'
     for f in $(find . -name $1)
     do
         if ! [[ "@3x" =~ $f ]] then
