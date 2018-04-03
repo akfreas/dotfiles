@@ -51,6 +51,7 @@ alias ramdisk='diskutil erasevolume HFS+ "ramdisk" `hdiutil attach -nomount ram:
 alias ox="open *.xcodeproj"
 alias ow="open *.xcworkspace"
 alias deriveddata="cd ~/Library/Developer/Xcode/DerivedData/"
+alias pprofiles="cd ~/Library/MobileDevice/Provisioning\ Profiles"
 
 
 ###############
@@ -74,7 +75,7 @@ alias gpo='git push origin -u'
 alias gpl='git pull --rebase origin'
 alias gcam='git commit -am'
 alias gcm="git commit -m"
-alias gst="git stash"
+alias gst="git stash save"
 alias gsa="git stash apply"
 alias gsl="git stash list"
 alias gss="git stash show"
