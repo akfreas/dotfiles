@@ -14,6 +14,11 @@ function fn() {
     find . -iname "*$1*";
 }
 
+function gcmc() {
+    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{4,4\}\)")"
+    git commit -m "[$ticket_name] $1"
+}
+
 function openpr() {
     ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{4,4\}\)")"
     temp_file=$(mktemp)
