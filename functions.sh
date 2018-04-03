@@ -11,7 +11,15 @@ function hf() {
 }
 
 function fn() {
-    find . -iname $1;
+    find . -iname "*$1*";
+}
+
+function openpr() {
+    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{4,4\}\)")"
+    temp_file=$(mktemp)
+    echo "[$ticket_name] \n\r" > $temp_file
+    sed -e "s/JIRA-ID/$ticket_name/g" .github/pull_request_template >> $temp_file
+    hub pull-request --edit -F $temp_file
 }
 
 function asset_resize() {
