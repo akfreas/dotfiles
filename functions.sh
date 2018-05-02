@@ -36,6 +36,14 @@ function openpr() {
     fi
 }
 
+function link_xcode_data() {
+    if [ -d "$1" ];
+    then
+        rm -rf ~/Library/Developer/Xcode/UserData
+        ln -s $SCRIPTPATH/Xcode/UserData  ~/Library/Developer/Xcode/UserData
+    fi
+}
+
 function asset_resize() {
 
     for f in $(find . -name $1)
