@@ -59,6 +59,7 @@ alias pprofiles="cd ~/Library/MobileDevice/Provisioning\ Profiles"
 ###############
 alias gs='git status'
 alias gl='git lg1'
+alias gr='git rf'
 alias gd='git diff --word-diff'
 alias gdst='gd --staged'
 alias gaa='git add -A .'
@@ -74,8 +75,7 @@ alias gpod='git push origin develop'
 alias gpo='git push origin -u'
 alias gpl='git pull --rebase origin'
 alias gcam='git commit -am'
-alias gcm="git commit -m"
-alias gst="git stash save"
+alias gst="git stash push -m"
 alias gsa="git stash apply"
 alias gsl="git stash list"
 alias gss="git stash show"

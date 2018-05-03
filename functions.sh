@@ -15,16 +15,25 @@ function fn() {
 }
 
 function gcmc() {
-    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{4,4\}\)")"
+    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{3,4\}\)")"
     git commit -m "[$ticket_name] $1"
 }
 
+function gcm() {
+    export branchname=$(git symbolic-ref --short HEAD)
+    git commit -m "$1"
+}
+
 function openpr() {
-    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{4,4\}\)")"
+    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{3,4\}\)")"
     temp_file=$(mktemp)
     echo "[$ticket_name] \n\r" > $temp_file
     sed -e "s/JIRA-ID/$ticket_name/g" .github/pull_request_template >> $temp_file
-    hub pull-request --edit -F $temp_file
+    if [[ $1 ]] then
+        hub pull-request --edit -F $temp_file -b $1
+    else
+        hub pull-request --edit -F $temp_file
+    fi
 }
 
 function asset_resize() {
