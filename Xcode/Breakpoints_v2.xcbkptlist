@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "UserGlobalBreakpointBucket"
+   type = "2"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.SymbolicBreakpoint">
+         <BreakpointContent
+            uuid = "8FDEEC86-1412-4EB7-A192-FA76F8F6F75F"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            symbolName = "-[UINavigationController pushViewController:animated:completion:]"
+            moduleName = "">
+            <Locations>
+            </Locations>
+         </BreakpointContent>
+
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

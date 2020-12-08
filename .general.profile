@@ -42,7 +42,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     alias ll='pwd; ls -Galhs'
 fi
 alias lll='CLICOLOR_FORCE=1 ls -Galsh | less -R'
-alias ramdisk='diskutil erasevolume HFS+ "ramdisk" `hdiutil attach -nomount ram://4194304`'
+alias ramdisk="diskutil partitionDisk $(hdiutil attach -nomount ram://2048000) 1 GPTFormat APFS 'ramdisk' '100%'"
 
 ##################
 ##### XCode ######
@@ -73,9 +73,9 @@ alias gpom='git push origin master'
 alias gpos='git push origin socialize'
 alias gpod='git push origin develop'
 alias gpo='git push origin -u'
-alias gpl='git pull --rebase origin'
+alias gpl='git pull origin'
 alias gcam='git commit -am'
-alias gst="git stash push -m"
+alias gst="git stash push"
 alias gsa="git stash apply"
 alias gsl="git stash list"
 alias gss="git stash show"
@@ -125,5 +125,12 @@ alias be='bundle exec'
 alias dockershell='bash --login "/Applications/Docker/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh"'
 alias dc='docker-compose'
 alias dm='docker-machine'
+
+##############
+#### AWS #####
+##############
+
+alias kmsDecryptClipboard='aws kms decrypt --ciphertext-blob fileb://<(pbpaste | base64 --decode) --output text --query Plaintext | base64 --decode'
+
 
 

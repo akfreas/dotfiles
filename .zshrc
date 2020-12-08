@@ -33,6 +33,7 @@ ZSH_THEME="robbyrussell"
 
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
+export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
@@ -76,17 +77,14 @@ _p="${_green}%/${_rc}"
 _v="rv=%?"
 
 alias vi='vim'
-alias node='nodejs'
 alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
-eval "$(thefuck --alias)"
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Devel
-export VIRTUALENVWRAPPER_LOG_DIR=logs
-source /usr/local/bin/virtualenvwrapper.sh
-
+export VIRTUALENVWRAPPER_SCRIPT=/usr/local/bin/virtualenvwrapper.sh
+source /usr/local/bin/virtualenvwrapper_lazy.sh
 
 export DIFF_OPTIONS=-u
 
@@ -106,9 +104,34 @@ export LANG=en_US.UTF-8
 export PS1='$(f_notifyme)'$PS1
 
 export GOPATH="$HOME/go"
+export PATH="/usr/local/go/bin:$PATH"
 export PATH="$HOME/.fastlane/bin:$PATH"
+export PATH="code:$PATH"
 
 alias less=$PAGER -i -R
 LESS="-i -R";
 export LESS;
 alias zless=$PAGER
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+ANDROID_HOME="/Users/afreas/Library/Android/sdk"
+
+#export NVM_DIR=~/.nvm
+#source $(brew --prefix nvm)/nvm.sh #takes many seconds to start, not worth it!
+
+#export NVM_DIR="$HOME/.nvm"
+#export PATH="/Users/afreas/.pyenv/bin:$PATH"
+#eval "$(pyenv init -)"
+#eval "$(pyenv virtualenv-init -)"
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# tabtab source for serverless package
+# uninstall by removing these lines or running `tabtab uninstall serverless`
+#[[ -f /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
+# tabtab source for sls package
+# uninstall by removing these lines or running `tabtab uninstall sls`
+#[[ -f /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
+
+# tabtab source for slss package
+# uninstall by removing these lines or running `tabtab uninstall slss`
+#[[ -f /Users/afreas/github/MobileTestUtils/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/afreas/github/MobileTestUtils/node_modules/tabtab/.completions/slss.zsh
