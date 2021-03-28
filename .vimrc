@@ -1,3 +1,6 @@
+if has('python3')
+  silent! python3 1
+endif
 "coloring
 colorscheme desert
 syntax on

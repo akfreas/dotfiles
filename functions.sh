@@ -15,7 +15,8 @@ function fn() {
 }
 
 function gcmc() {
-    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{3,4\}\)")"
+    #ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Za-z]*-[0-9]\{,5}\)")"
+    ticket_name="$(git rev-parse --abbrev-ref HEAD)"
     git commit -m "[$ticket_name] $1"
 }
 
@@ -25,7 +26,9 @@ function gcm() {
 }
 
 function openpr() {
-    ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{3,4\}\)")"
+
+    #ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{3,4\}\)")"
+    ticket_name="$(git rev-parse --abbrev-ref HEAD)"
     temp_file=$(mktemp)
     echo "[$ticket_name] \n\r" > $temp_file
     sed -e "s/JIRA-ID/$ticket_name/g" .github/pull_request_template >> $temp_file

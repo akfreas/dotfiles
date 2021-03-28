@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DVTConsoleDebuggerInputTextColor</key>
+	<string>1 0.948514 0.655204 1</string>
+	<key>DVTConsoleDebuggerInputTextFont</key>
+	<string>Courier - 13.0</string>
+	<key>DVTConsoleDebuggerOutputTextColor</key>
+	<string>0.616376 0.861277 1 1</string>
+	<key>DVTConsoleDebuggerOutputTextFont</key>
+	<string>Courier - 13.0</string>
+	<key>DVTConsoleDebuggerPromptTextColor</key>
+	<string>0.255 0.714 0.27 1</string>
+	<key>DVTConsoleDebuggerPromptTextFont</key>
+	<string>Courier-Bold - 13.0</string>
+	<key>DVTConsoleExectuableInputTextColor</key>
+	<string>1 0.789783 0.545615 1</string>
+	<key>DVTConsoleExectuableInputTextFont</key>
+	<string>Courier - 13.0</string>
+	<key>DVTConsoleExectuableOutputTextColor</key>
+	<string>0.755715 1 0.578908 1</string>
+	<key>DVTConsoleExectuableOutputTextFont</key>
+	<string>Courier - 13.0</string>
+	<key>DVTConsoleTextBackgroundColor</key>
+	<string>0.046468 0.0385096 0.0684397 1</string>
+	<key>DVTConsoleTextInsertionPointColor</key>
+	<string>1 1 1 1</string>
+	<key>DVTConsoleTextSelectionColor</key>
+	<string>0.496 0.496 0.378 1</string>
+	<key>DVTDebuggerInstructionPointerColor</key>
+	<string>0.12 0.31 0.34 1</string>
+	<key>DVTMarkupTextBackgroundColor</key>
+	<string>0.122745 0.118168 0.146246 1</string>
+	<key>DVTMarkupTextBorderColor</key>
+	<string>0.192926 0.188715 0.214546 1</string>
+	<key>DVTMarkupTextCodeFont</key>
+	<string>Monaco - 13.0</string>
+	<key>DVTMarkupTextEmphasisColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextEmphasisFont</key>
+	<string>.AppleSystemUIFontItalic - 13.0</string>
+	<key>DVTMarkupTextLinkColor</key>
+	<string>0.1 0.1 0.819 1</string>
+	<key>DVTMarkupTextLinkFont</key>
+	<string>.AppleSystemUIFont - 13.0</string>
+	<key>DVTMarkupTextNormalColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextNormalFont</key>
+	<string>.AppleSystemUIFont - 13.0</string>
+	<key>DVTMarkupTextOtherHeadingColor</key>
+	<string>0.843125 0.96023 0.882895 0.5</string>
+	<key>DVTMarkupTextOtherHeadingFont</key>
+	<string>.AppleSystemUIFont - 18.2</string>
+	<key>DVTMarkupTextPrimaryHeadingColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextPrimaryHeadingFont</key>
+	<string>.AppleSystemUIFont - 31.2</string>
+	<key>DVTMarkupTextSecondaryHeadingColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextSecondaryHeadingFont</key>
+	<string>.AppleSystemUIFont - 23.4</string>
+	<key>DVTMarkupTextStrongColor</key>
+	<string>0.843125 0.96023 0.882895 1</string>
+	<key>DVTMarkupTextStrongFont</key>
+	<string>.AppleSystemUIFontBold - 13.0</string>
+	<key>DVTSourceTextBackground</key>
+	<string>0.0464622 0.0414869 0.0720065 1</string>
+	<key>DVTSourceTextBlockDimBackgroundColor</key>
+	<string>0.5 0.5 0.5 1</string>
+	<key>DVTSourceTextInsertionPointColor</key>
+	<string>1 1 1 1</string>
+	<key>DVTSourceTextInvisiblesColor</key>
+	<string>0.5 0.5 0.5 1</string>
+	<key>DVTSourceTextSelectionColor</key>
+	<string>0.496 0.496 0.378 1</string>
+	<key>DVTSourceTextSyntaxColors</key>
+	<dict>
+		<key>xcode.syntax.attribute</key>
+		<string>0.335 0.456 0.488 1</string>
+		<key>xcode.syntax.character</key>
+		<string>0.491419 0.77 0.472443 1</string>
+		<key>xcode.syntax.comment</key>
+		<string>0.668038 0.791114 0.886278 1</string>
+		<key>xcode.syntax.comment.doc</key>
+		<string>0.668038 0.791114 0.886278 1</string>
+		<key>xcode.syntax.comment.doc.keyword</key>
+		<string>0.668038 0.791114 0.886278 1</string>
+		<key>xcode.syntax.identifier.class</key>
+		<string>0.907298 0.769141 0.510716 1</string>
+		<key>xcode.syntax.identifier.class.system</key>
+		<string>0.394416 0.926667 0.910638 1</string>
+		<key>xcode.syntax.identifier.constant</key>
+		<string>0.907298 0.769141 0.510716 1</string>
+		<key>xcode.syntax.identifier.constant.system</key>
+		<string>0.92292 0.558862 1 1</string>
+		<key>xcode.syntax.identifier.function</key>
+		<string>0.907298 0.769141 0.510716 1</string>
+		<key>xcode.syntax.identifier.function.system</key>
+		<string>0.98017 0.837163 0.624103 1</string>
+		<key>xcode.syntax.identifier.macro</key>
+		<string>0.778 0.488 0.284 1</string>
+		<key>xcode.syntax.identifier.macro.system</key>
+		<string>0.456397 0.346667 0.778 1</string>
+		<key>xcode.syntax.identifier.type</key>
+		<string>0.907298 0.769141 0.510716 1</string>
+		<key>xcode.syntax.identifier.type.system</key>
+		<string>0.92292 0.558862 1 1</string>
+		<key>xcode.syntax.identifier.variable</key>
+		<string>0.907298 0.549627 0.760392 1</string>
+		<key>xcode.syntax.identifier.variable.system</key>
+		<string>0.507701 0.501029 0.926667 1</string>
+		<key>xcode.syntax.keyword</key>
+		<string>0.988158 0.798683 0.361709 1</string>
+		<key>xcode.syntax.number</key>
+		<string>0.491419 0.77 0.472443 1</string>
+		<key>xcode.syntax.plain</key>
+		<string>0.843125 0.96023 0.882895 1</string>
+		<key>xcode.syntax.preprocessor</key>
+		<string>0.132858 0.140243 1 1</string>
+		<key>xcode.syntax.string</key>
+		<string>0.195212 0.928689 0.704263 1</string>
+		<key>xcode.syntax.url</key>
+		<string>0.1 0.1 0.819 1</string>
+	</dict>
+	<key>DVTSourceTextSyntaxFonts</key>
+	<dict>
+		<key>xcode.syntax.attribute</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.character</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.comment</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.comment.doc</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.comment.doc.keyword</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.class</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.class.system</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.constant</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.constant.system</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.function</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.function.system</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.macro</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.macro.system</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.type</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.type.system</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.variable</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.identifier.variable.system</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.keyword</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.number</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.plain</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.preprocessor</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.string</key>
+		<string>Monaco - 12.0</string>
+		<key>xcode.syntax.url</key>
+		<string>Monaco - 12.0</string>
+	</dict>
+</dict>
+</plist>
