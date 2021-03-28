@@ -5,7 +5,7 @@ REPLACE_STRING=$3;
 
 IGNORE_LIST='\.png \.ttf';
 
-FILE_LIST=`find $TARGET_DIR -type f -not -path "*.git*" -not -path "*$BACKUP_DIR*" -not -path "**/node_modules/*"`
+FILE_LIST=`find $TARGET_DIR -type f -not -path "*.git*" -not -path "*$BACKUP_DIR*" -not -path "*/node_modules/*"`
 mkdir -pv $BACKUP_DIR;
 while IFS= read -r line
 do

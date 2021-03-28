@@ -33,8 +33,6 @@ ZSH_THEME="robbyrussell"
 
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
-export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
 export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
 source $ZSH/oh-my-zsh.sh
 
@@ -114,13 +112,6 @@ alias less=$PAGER -i -R
 LESS="-i -R";
 export LESS;
 alias zless=$PAGER
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-
-# tabtab source for packages
-# uninstall by removing these lines
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 ANDROID_HOME="/Users/afreas/Library/Android/sdk"
 
