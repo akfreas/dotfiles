@@ -33,6 +33,8 @@ ZSH_THEME="robbyrussell"
 
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
+export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
@@ -76,12 +78,10 @@ _p="${_green}%/${_rc}"
 _v="rv=%?"
 
 alias vi='vim'
-alias node='nodejs'
 alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
-eval "$(thefuck --alias)"
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Devel
 export VIRTUALENVWRAPPER_LOG_DIR=logs
@@ -105,10 +105,17 @@ export LANG=en_US.UTF-8
 
 export PS1='$(f_notifyme)'$PS1
 
-export GOPATH="$HOME/go"
 export PATH="$HOME/.fastlane/bin:$PATH"
 
 alias less=$PAGER -i -R
 LESS="-i -R";
 export LESS;
 alias zless=$PAGER
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# tabtab source for packages
+# uninstall by removing these lines
+[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true

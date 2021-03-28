@@ -1,3 +1,4 @@
+set -e
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 echo $SCRIPTPATH
 
@@ -25,10 +26,17 @@ curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 
 
 cd ~/.vim/bundle
+if [ ! -d "./vim-bundler" ];
+then
 git clone git://github.com/tpope/vim-bundler.git
+fi;
 
+
+if [ ! -d "./Vundle.vim" ];
+then
 
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+fi
 
 unamestr=`uname`
 if [[ "$unamestr" == 'Linux' ]]; then
@@ -45,8 +53,8 @@ if [[ "$unamestr" == 'Linux' ]]; then
                 --enable-multibyte \
                 --enable-rubyinterp \
                 --enable-pythoninterp \
-                --with-python-config-dir=/usr/lib/python2.7/config \
                 --enable-python3interp \
+                --with-python3-config-dir=/usr/lib/python3.7/config-3.7m-x86_64-linux-gnu \
                 --with-python3-config-dir=/usr/lib/python3.5/config \
                 --enable-perlinterp \
                 --enable-luainterp \
@@ -80,14 +88,17 @@ if [[ "$unamestr" == 'Linux' ]]; then
 
 
 elif [[ "$unamestr" == 'Darwin' ]]; then
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    brew -v || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    if [ ! -d "$HOME/.oh-my-zsh" ];
+    then
     wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh
+    fi
     sudo chsh -s `which zsh` `whoami`
     brew install cmake \
         wget ruby-build \
         vim tree \
         rbenv thefuck docker-machine
-    sudo xcode-select --install
+    xcode-select -v || sudo xcode-select --install
 fi
 
 # Install Vim Plugins
@@ -107,7 +118,7 @@ sudo pip install virtualenvwrapper
 
 # Docker Compose
 
-curl -L https://github.com/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` > ./docker-compose
+curl -L https://github.com/docker/compose/releases/download/1.27.4/docker-compose-`uname -s`-`uname -m` > ./docker-compose
 sudo mv docker-compose /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 

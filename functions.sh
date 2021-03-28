@@ -29,10 +29,11 @@ function openpr() {
     temp_file=$(mktemp)
     echo "[$ticket_name] \n\r" > $temp_file
     sed -e "s/JIRA-ID/$ticket_name/g" .github/pull_request_template >> $temp_file
+    vi -c 'set wrap' $temp_file
     if [[ $1 ]] then
-        hub pull-request --edit -F $temp_file -b $1
+        hub pull-request -F $temp_file -b $1
     else
-        hub pull-request --edit -F $temp_file
+        hub pull-request -F $temp_file
     fi
 }
 
@@ -107,6 +108,7 @@ function sendpush() {
     fi
 
     JSON='{"value1":"'"$CMD"'","value2":"'"$VERB"'","value3":"'"$LAST_EXIT_CODE"'"}';
+    echo $JSON
     curl -s -X POST -H "Content-Type: application/json" -d $JSON https://maker.ifttt.com/trigger/long_running_desktop_task/with/key/kMri90fxHSN2xqBR-xQbC12C-iFWbXnXTbBVfVfvLjD  > /dev/null
 }
 

@@ -20,7 +20,7 @@
     rf = reflog show --format=format:'%C(bold blue)%h%C(reset) %C(6)%cr%C(reset)%C(green)%d%C(reset) %gD: %gs'
 
 [core]
-	excludesfile = /Users/akfreas/.gitignore_global
+	excludesfile = /Users/akfreas/.gitignore
 [credential]
 	helper = osxkeychain
 [push]
@@ -30,3 +30,8 @@
 [filter "media"]
 	clean = git-media-clean %f
 	smudge = git-media-smudge %f
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
