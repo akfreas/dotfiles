@@ -15,7 +15,7 @@ then
     ln -s $SCRIPTPATH/Xcode/UserData  ~/Library/Developer/Xcode/UserData
 fi
 
-mv ~/.vimrc ~/.vimrc-bak
+mv ~/.vimrc ~/.vimrc-bak || true
 ln -s $SCRIPTPATH/.vimrc ~/.vimrc
 
 mv ~/.gitconfig ~/.gitconfig.bak
@@ -113,8 +113,8 @@ cd vimpager
 sudo make install
 
 # Pip Install
-curl https://bootstrap.pypa.io/get-pip.py | sudo python
-sudo pip install virtualenvwrapper
+curl https://bootstrap.pypa.io/get-pip.py | sudo python || true
+sudo pip3 install virtualenvwrapper
 
 # Docker Compose
 
@@ -122,10 +122,10 @@ curl -L https://github.com/docker/compose/releases/download/1.27.4/docker-compos
 sudo mv docker-compose /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-mv ~/.bash_profile ~/.bash_profile.bak
+mv ~/.bash_profile ~/.bash_profile.bak || true
 ln -s $SCRIPTPATH/.zshrc ~/.bash_profile
 
 
-mv ~/.zshrc ~/.zshrc.bak
+mv ~/.zshrc ~/.zshrc.bak || true
 ln -s $SCRIPTPATH/.zshrc ~/.zshrc
 cd -
