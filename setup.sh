@@ -97,7 +97,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     brew install cmake \
         wget ruby-build \
         vim tree \
-        rbenv thefuck docker-machine
+        rbenv fzf docker-machine
     xcode-select -v || sudo xcode-select --install
 fi
 
