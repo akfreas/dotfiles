@@ -14,6 +14,11 @@ function fn() {
     find . -iname "*$1*";
 }
 
+function fnin() {
+
+    find . -iname "*$1*" -exec grep -il "$2" '{}' +;
+}
+
 function gcmc() {
     #ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Za-z]*-[0-9]\{,5}\)")"
     ticket_name="$(git rev-parse --abbrev-ref HEAD)"

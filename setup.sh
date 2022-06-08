@@ -101,6 +101,9 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     xcode-select -v || sudo xcode-select --install
 fi
 
+# To install fzf useful key bindings and fuzzy completion:
+yes | $(brew --prefix)/opt/fzf/install
+
 # Install Vim Plugins
 
 vim -c BundleInstall -c quitall
