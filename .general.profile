@@ -131,6 +131,6 @@ alias dm='docker-machine'
 ##############
 
 alias kmsDecryptClipboard='aws kms decrypt --ciphertext-blob fileb://<(pbpaste | base64 --decode) --output text --query Plaintext | base64 --decode'
-
+alias sls='node ./node_modules/serverless/bin/serverless.js'
 
 

@@ -30,6 +30,11 @@ function gcm() {
     git commit -m "$1"
 }
 
+
+function gcmn() {
+    export branchname=$(git symbolic-ref --short HEAD)
+    git commit --no-verify -m "$1"
+}
 function openpr() {
 
     #ticket_name="$(git rev-parse --abbrev-ref HEAD | grep --color=never -oh "\([A-Z]*-[0-9]\{3,4\}\)")"

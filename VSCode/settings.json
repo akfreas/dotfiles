@@ -1,0 +1,100 @@
+{
+  "javascript.validate.enable": false,
+  "files.autoSave": "onWindowChange",
+  "files.associations": {
+    "*.svg": "html"
+  },
+  "search.exclude": {
+    "**/.serverless": true,
+  "**/.webpack": true, 
+  "**/node_modules": true,
+  ".yarn": true
+},
+  "jest.runAllTestsFirst": false,
+  "jest.autoEnable": false,
+  "jest.showCoverageOnLoad": false,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "eslint.nodePath": "/usr/local/bin/node",
+  "eslint.packageManager": "yarn",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "python.formatting.provider": "black",
+  "files.autoSave": "onFocusChange",
+  "editor.tabSize": 2,
+  "eslint.run": "onSave",
+  "eslint.lintTask.enable": true,
+  "eslint.alwaysShowStatus": true,
+  "eslint.format.enable": true,
+  "javascript.format.enable": true,
+  "eslint.validate": ["javascript"],
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "yaml.customTags": [
+    "!And",
+    "!And sequence",
+    "!If",
+    "!If sequence",
+    "!Not",
+    "!Not sequence",
+    "!Equals",
+    "!Equals sequence",
+    "!Or",
+    "!Or sequence",
+    "!FindInMap",
+    "!FindInMap sequence",
+    "!Base64",
+    "!Join",
+    "!Join sequence",
+    "!Cidr",
+    "!Ref",
+    "!Sub",
+    "!Sub sequence",
+    "!GetAtt",
+    "!GetAZs",
+    "!ImportValue",
+    "!ImportValue sequence",
+    "!Select",
+    "!Select sequence",
+    "!Split",
+    "!Split sequence"
+  ],
+  "yaml.validate": false,
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter.notebook.ipynb"
+  },
+  "cSpell.userWords": [
+    "architected",
+    "onboarded"
+  ],
+  "editor.minimap.enabled": false,
+  "redhat.telemetry.enabled": false,
+  "editor.tabCompletion": "on",
+  "[javascript]": {
+    "editor.maxTokenizationLineLength": 2500,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.unicodeHighlight.ambiguousCharacters": false,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.inlineSuggest.enabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": false,
+    "markdown": false
+  },
+  "[python]": {
+    "editor.formatOnType": true
+  }
+}
