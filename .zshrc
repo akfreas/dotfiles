@@ -33,7 +33,9 @@ ZSH_THEME="robbyrussell"
 
 
 export PATH=/usr/local/bin:/bin:/usr/sbin:/sbin:/usr/bin:/opt/X11/bin:
-export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
+export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
+export PYTHONPATH=/usr/local/lib/python3.10/site-packages
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
@@ -81,11 +83,6 @@ alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
-export WORKON_HOME=$HOME/.virtualenvs
-export PROJECT_HOME=$HOME/Devel
-export VIRTUALENVWRAPPER_SCRIPT=/usr/local/bin/virtualenvwrapper.sh
-source /usr/local/bin/virtualenvwrapper_lazy.sh
-
 export DIFF_OPTIONS=-u
 
 #unsetopt correct_all
@@ -113,25 +110,28 @@ LESS="-i -R";
 export LESS;
 alias zless=$PAGER
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-ANDROID_HOME="/Users/afreas/Library/Android/sdk"
+export ANDROID_HOME="/Users/akfreas/Library/Android/sdk"
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/platform-tools
 
-#export NVM_DIR=~/.nvm
-#source $(brew --prefix nvm)/nvm.sh #takes many seconds to start, not worth it!
+eval "$(pyenv init --path)"
 
-#export NVM_DIR="$HOME/.nvm"
-#export PATH="/Users/afreas/.pyenv/bin:$PATH"
-#eval "$(pyenv init -)"
-#eval "$(pyenv virtualenv-init -)"
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+PATH=$PATH:~/.composer/vendor/bin
 
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-#[[ -f /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-#[[ -f /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
+export PATH="/opt/homebrew/bin:$PATH"
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completionexport PATH="$HOME/.pyenv/bin:$PATH"
 
-# tabtab source for slss package
-# uninstall by removing these lines or running `tabtab uninstall slss`
-#[[ -f /Users/afreas/github/MobileTestUtils/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/afreas/github/MobileTestUtils/node_modules/tabtab/.completions/slss.zsh
+
+#export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+#export PATH=$JAVA_HOME/bin:$PATH
+
+# Created by `pipx` on 2024-07-16 06:34:52
+export PATH="$PATH:/Users/akfreas/.local/bin"
+
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME/Devel
+source virtualenvwrapper.sh
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"

@@ -1,9 +1,44 @@
+function create_ramdisk() {
+    size="2048000" # 2.1 GB in blocks
+    ramdisk_info_file="/tmp/ramdisk_info.txt"
+
+    # Create and attach the ramdisk
+    ramdisk_dev=$(hdiutil attach -nomount ram://2048000 | awk '{ print $1 }' | sed 's/ *$//')
+    echo "ramdisk_dev $ramdisk_dev."
+    # Partition and format the ramdisk
+    #diskutil partitionDisk $ramdisk_dev 1 GPTFormat APFS 'ramdisk' '100%'
+    diskutil partitionDisk $ramdisk_dev 1 GPTFormat APFS 'ramdisk' '100%'
+
+    # Write the device identifier to a file
+    echo "${ramdisk_dev}" > "${ramdisk_info_file}"
+
+    echo "Ramdisk mounted at ${ramdisk_dev}"
+}
+
+#alias ramdisk="diskutil partitionDisk $(hdiutil attach -nomount ram://2048000) 1 GPTFormat APFS 'ramdisk' '100%'"
+
+function destroy_ramdisk() {
+    ramdisk_info_file="/tmp/ramdisk_info.txt"
+
+    # Read the device identifier from the file
+    ramdisk_dev=$(cat "${ramdisk_info_file}")
+
+    # Unmount and detach the ramdisk
+    diskutil unmountDisk "${ramdisk_dev}"
+    hdiutil detach "${ramdisk_dev}"
+
+    # Remove the temporary file
+    rm -f "${ramdisk_info_file}"
+
+    echo "Ramdisk unmounted and detached"
+}
+
 function find_replace() {
     sh $BASH_PROFILE_HOME/rename.sh $1 $2 $3
 }
 
 function playsound() {
-    afplay $BASH_PROFILE_HOME/assets/airhorn.mp3;
+    afplay /System/Library/Sounds/Submarine.aiff
 }
 
 function hf() {
@@ -136,6 +171,18 @@ function f_notifyme {
   LAST_EXIT_CODE=$?
   CMD=$(fc -ln -1)
   # No point in waiting for the command to complete
-  notifyme "$CMD" "$LAST_EXIT_CODE" &
+  #/Users/akfreas/dotfiles/notifyme.py "$CMD" "$LAST_EXIT_CODE" &
+}
+
+function swiftlint_modified() {
+    git diff --name-only | while read -r file
+    do
+        # Check if the file has a .swift extension
+        if [[ $file == *.swift ]]
+        then
+            # Run swiftlint on the file
+            swiftlint --fix "$file"
+        fi
+    done
 }
 

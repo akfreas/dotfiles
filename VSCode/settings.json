@@ -1,35 +1,40 @@
 {
   "javascript.validate.enable": false,
-  "files.autoSave": "onWindowChange",
+  "files.autoSave": "onFocusChange",
   "files.associations": {
     "*.svg": "html"
   },
   "search.exclude": {
     "**/.serverless": true,
-  "**/.webpack": true, 
-  "**/node_modules": true,
-  ".yarn": true
-},
+    "**/.webpack": true,
+    "**/node_modules": true,
+    ".yarn": true
+  },
   "jest.runAllTestsFirst": false,
   "jest.autoEnable": false,
   "jest.showCoverageOnLoad": false,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "explorer.confirmDelete": false,
   "explorer.confirmDragAndDrop": false,
-  "eslint.nodePath": "/usr/local/bin/node",
   "eslint.packageManager": "yarn",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit",
+    "source.addMissingImports": "explicit",
+    "source.organizeImports": "explicit"
   },
   "python.formatting.provider": "black",
-  "files.autoSave": "onFocusChange",
   "editor.tabSize": 2,
   "eslint.run": "onSave",
   "eslint.lintTask.enable": true,
   "eslint.alwaysShowStatus": true,
   "eslint.format.enable": true,
   "javascript.format.enable": true,
-  "eslint.validate": ["javascript"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -69,10 +74,7 @@
   "workbench.editorAssociations": {
     "*.ipynb": "jupyter.notebook.ipynb"
   },
-  "cSpell.userWords": [
-    "architected",
-    "onboarded"
-  ],
+  "cSpell.userWords": ["architected", "onboarded", "Tettra"],
   "editor.minimap.enabled": false,
   "redhat.telemetry.enabled": false,
   "editor.tabCompletion": "on",
@@ -94,7 +96,47 @@
     "plaintext": false,
     "markdown": false
   },
+  "files.exclude": {
+    "**/.serverless": true,
+    "**/.webpack": true,
+    "**/node_modules": true,
+    ".yarn": true
+  },
   "[python]": {
     "editor.formatOnType": true
-  }
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "python.defaultInterpreterPath": "/Users/akfreas/.virtualenvs/gpt-localize",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.defaultFormatter": "hb432.prettier-eslint-typescript",
+  "prettier-eslint-typescript.prettierOptions": {},
+  "git.openRepositoryInParentFolders": "never",
+  "editor.defaultFoldingRangeProvider": "dbaeumer.vscode-eslint",
+  "prettier.configPath": ".prettierrc",
+  "terminal.integrated.defaultProfile.osx": "bash",
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+  "workbench.preferredDarkColorTheme": "Default Dark+",
+  "workbench.colorTheme": "Default Dark+",
+  "laravel-pint.enable": true,
+  "editor.formatOnSave": true,
+
+  "php.validate.executablePath": "/usr/local/bin/php",
+  "[php]": {
+    "editor.defaultFormatter": "open-southeners.laravel-pint",
+    "editor.formatOnSave": true
+  },
+  "phpcs.executablePath": "/Users/akfreas/.composer/vendor/bin/phpcs",
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "github.copilot.editor.enableAutoCompletions": true,
+  "window.confirmBeforeClose": "keyboardOnly",
+  "[blade]": {
+    "editor.defaultFormatter": "shufo.vscode-blade-formatter"
+  },
+  "typescript.updateImportsOnFileMove.enabled": "always"
 }

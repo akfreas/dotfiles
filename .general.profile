@@ -16,6 +16,7 @@ alias cppk="pb < ~/.ssh/id_rsa.pub"
 alias cppvk="pb < ~/.ssh/id_rsa"
 alias notifyme="osascript ~/dotfiles/notifyme.osascript"
 alias ksdiff='/Applications/p4merge.app/Contents/Resources/launchp4merge'
+alias myip='dig @resolver4.opendns.com myip.opendns.com +short | pbcopy'
 
 #############################
 #### Filesystem Actions #####
@@ -42,8 +43,6 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     alias ll='pwd; ls -Galhs'
 fi
 alias lll='CLICOLOR_FORCE=1 ls -Galsh | less -R'
-alias ramdisk="diskutil partitionDisk $(hdiutil attach -nomount ram://2048000) 1 GPTFormat APFS 'ramdisk' '100%'"
-
 ##################
 ##### XCode ######
 ##################
@@ -64,7 +63,7 @@ alias gd='git diff --word-diff'
 alias gdst='gd --staged'
 alias gaa='git add -A .'
 alias gco='git checkout'
-alias gcob='git checkout -b'
+alias gcob='f() { git checkout -b "$1" || git checkout "$1"; }; f'
 alias gf='git fetch --all'
 alias gplom='gpl master'
 alias gplod='git pull origin develop'
@@ -77,7 +76,7 @@ alias gpl='git pull origin'
 alias gcam='git commit -am'
 alias gst="git stash push"
 alias gsa="git stash apply"
-alias gsl="git stash list"
+alias gsl="git stash-list"
 alias gss="git stash show"
 alias gsho="git show"
 alias grhard="git reset --hard"
