@@ -185,7 +185,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     brew install cmake \
         wget ruby-build \
         vim tree \
-        rbenv fzf forgit pip3 pipx python@3
+        rbenv fzf forgit pipx python@3
     print_success "Homebrew packages installed"
     
     print_step "Checking for Xcode Command Line Tools..."
