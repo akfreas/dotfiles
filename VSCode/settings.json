@@ -108,7 +108,7 @@
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
-  "python.defaultInterpreterPath": "/Users/akfreas/.virtualenvs/gpt-localize",
+  "python.defaultInterpreterPath": "/Users/akfreas/.virtualenvs/truffle-deploy",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -122,7 +122,6 @@
     "editor.defaultFormatter": "Vue.volar"
   },
   "workbench.preferredDarkColorTheme": "Default Dark+",
-  "workbench.colorTheme": "Default Dark+",
   "laravel-pint.enable": true,
   "editor.formatOnSave": true,
 
@@ -138,5 +137,6 @@
   "[blade]": {
     "editor.defaultFormatter": "shufo.vscode-blade-formatter"
   },
-  "typescript.updateImportsOnFileMove.enabled": "always"
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "workbench.colorTheme": "Default Dark+"
 }

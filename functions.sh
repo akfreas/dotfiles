@@ -1,19 +1,22 @@
 function create_ramdisk() {
-    size="2048000" # 2.1 GB in blocks
+    size=${1:-"4410000"} # Default to 2.1 GB in blocks if size is not provided
     ramdisk_info_file="/tmp/ramdisk_info.txt"
-
+    destroy_ramdisk
     # Create and attach the ramdisk
-    ramdisk_dev=$(hdiutil attach -nomount ram://2048000 | awk '{ print $1 }' | sed 's/ *$//')
+    ramdisk_dev=$(hdiutil attach -nomount ram://$size | awk '{ print $1 }' | sed 's/ *$//')
     echo "ramdisk_dev $ramdisk_dev."
+    
     # Partition and format the ramdisk
-    #diskutil partitionDisk $ramdisk_dev 1 GPTFormat APFS 'ramdisk' '100%'
     diskutil partitionDisk $ramdisk_dev 1 GPTFormat APFS 'ramdisk' '100%'
+    diskutil eraseDisk HFS+ 'ramdisk' $ramdisk_dev
 
     # Write the device identifier to a file
     echo "${ramdisk_dev}" > "${ramdisk_info_file}"
 
     echo "Ramdisk mounted at ${ramdisk_dev}"
 }
+
+
 
 #alias ramdisk="diskutil partitionDisk $(hdiutil attach -nomount ram://2048000) 1 GPTFormat APFS 'ramdisk' '100%'"
 

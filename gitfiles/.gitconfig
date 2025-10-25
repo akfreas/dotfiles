@@ -1,8 +1,8 @@
 [color]
 	ui = true
 [user]
-	name = Alexander Freas
-	email = akfreas@gmail.com
+	name = Alex Freas
+	email = akfreas@users.noreply.github.com
 [mergetool]
 	keepBackup = true
 [color]
@@ -13,8 +13,7 @@
     changed = red
     untracked = yellow
 [alias]
-    lg1 = log --graph --pretty=short -w --format=format:'%C(bold blue)%h %C(reset) %C(6)%cr%C(reset) - %C(8)%an %C(2)%d %C(reset)%s'
-    
+    lg1 = log --graph --pretty=short -w --format=format:'%C(bold blue)%h %C(reset) %C(6)%cr %C(magenta)%ad%C(reset) - %C(8)%an %C(2)%d %C(reset)%s' --date=format:'%a, %b %d, %Y'
     lg2 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%cD%C(reset) %C(bold green)(%cr)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %cn%C(reset)' --abbrev-commit
     lg = !"git lg1"
     rf = reflog show --format=format:'%C(bold blue)%h%C(reset) %C(6)%cr%C(reset)%C(green)%d%C(reset) %gD: %gs'

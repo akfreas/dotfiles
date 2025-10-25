@@ -28,7 +28,7 @@ curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 cd ~/.vim/bundle
 if [ ! -d "./vim-bundler" ];
 then
-git clone git://github.com/tpope/vim-bundler.git
+git clone https://github.com/tpope/vim-bundler.git
 fi;
 
 
@@ -97,7 +97,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     brew install cmake \
         wget ruby-build \
         vim tree \
-        rbenv fzf docker-machine
+        rbenv fzf forgit
     xcode-select -v || sudo xcode-select --install
 fi
 
