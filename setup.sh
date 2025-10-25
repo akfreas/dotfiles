@@ -185,7 +185,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
     brew install cmake \
         wget ruby-build \
         vim tree \
-        rbenv fzf forgit
+        rbenv fzf forgit pip pipx
     print_success "Homebrew packages installed"
     
     print_step "Checking for Xcode Command Line Tools..."
@@ -218,9 +218,6 @@ cd vimpager
 sudo make install
 print_success "vimpager installed"
 
-print_step "Installing pip..."
-curl https://bootstrap.pypa.io/get-pip.py | sudo python || true
-print_success "pip installed"
 
 print_step "Installing Python virtualenvwrapper..."
 sudo pip3 install virtualenvwrapper
