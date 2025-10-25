@@ -226,16 +226,14 @@ print_step "Installing Python virtualenvwrapper..."
 sudo pip3 install virtualenvwrapper
 print_success "virtualenvwrapper installed"
 
-print_step "Installing Docker Compose..."
-curl -L https://github.com/docker/compose/releases/download/1.27.4/docker-compose-`uname -s`-`uname -m` > ./docker-compose
-sudo mv docker-compose /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-print_success "Docker Compose installed"
-
 print_step "Setting up shell profiles..."
 mv ~/.bash_profile ~/.bash_profile.bak || true
 ln -s $SCRIPTPATH/.zshrc ~/.bash_profile
 print_info "bash_profile linked"
+
+print_step "Installing Cursor..."
+curl https://cursor.com/install -fsS | bash
+print_success "Cursor installed"
 
 mv ~/.zshrc ~/.zshrc.bak || true
 ln -s $SCRIPTPATH/.zshrc ~/.zshrc
