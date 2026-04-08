@@ -20,7 +20,7 @@
 	stash-list = stash list --pretty=short --format=format:'%C(bold blue)%h %C(reset) %C(6)%cr%C(reset) - %C(8)%an %C(2)%d %C(reset)%s'
 
 [core]
-	excludesfile = /Users/akfreas/.gitignore
+	excludesFile = ~/.gitignore
 [credential]
 	helper = osxkeychain
 [push]

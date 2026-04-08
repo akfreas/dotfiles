@@ -116,7 +116,6 @@ alias zless=$PAGER
 
 # Source forgit plugin (requires fzf)
 [ -f /opt/homebrew/opt/forgit/share/forgit/forgit.plugin.zsh ] && source /opt/homebrew/opt/forgit/share/forgit/forgit.plugin.zsh
-export ANDROID_HOME="/Users/akfreas/Library/Android/sdk"
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 
@@ -134,7 +133,6 @@ export NVM_DIR="$HOME/.nvm"
 #export PATH=$JAVA_HOME/bin:$PATH
 
 # Created by `pipx` on 2024-07-16 06:34:52
-export PATH="$PATH:/Users/akfreas/.local/bin"
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Devel
@@ -160,4 +158,13 @@ unset __conda_setup
 
 
 # Added by Windsurf
-export PATH="/Users/akfreas/.codeium/windsurf/bin:$PATH"
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+export PATH="$HOME/.local/bin:$PATH"
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+export PATH="$JAVA_HOME/bin:$PATH"
+export ANDROID_HOME="/Users/alexander.freas/Library/Android/sdk"
+export ANDROID_SDK_ROOT="/Users/alexander.freas/Library/Android/sdk"
+export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
