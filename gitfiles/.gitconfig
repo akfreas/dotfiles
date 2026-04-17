@@ -1,3 +1,5 @@
+[checkout]
+    defaultRemote = origin
 [color]
 	ui = true
 [user]
