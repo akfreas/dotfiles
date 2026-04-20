@@ -41,7 +41,7 @@ Use this skill when the user asks to commit changes. Produce small, focused comm
 
 ## Output format
 
-After committing, print one block per commit. Use `git show --name-status --format="%h - %s" <hash>` to get the data, then render it with box-drawing characters so it reads like `tree` output.
+After committing, print one block per commit. Use `git show --name-status --format="%h - %s" <hash>` to get the data, then render it with box-drawing characters so it reads like `tree` output. Emit the block via `printf` (or `echo -e`) so the ANSI escape codes are interpreted by the terminal — do **not** wrap the output in a fenced code block.
 
 Rules:
 - Header line: `<short-hash> - <subject>`.
@@ -49,22 +49,37 @@ Rules:
 - Use `├──` for non-last items and `└──` for the last item at each level. The last group in a commit uses `└──`; earlier groups use `├──`. Inside a group, the last file uses `└──` and others use `├──`. Use `│   ` to continue vertical lines through non-last groups; use four spaces under the last group.
 - Separate commits with a blank line.
 
-Example (two commits, showing correct spacing):
+### Colors (ANSI escape codes)
+
+Apply these exact codes. Always terminate every colored span with `\033[0m` so color does not bleed into the next element. Tree characters (`├──`, `└──`, `│`) inherit the default terminal color — do not color them.
+
+| Element          | Code              | Name              |
+|------------------|-------------------|-------------------|
+| Commit hash      | `\033[1;34m`      | bold blue         |
+| Commit message   | `\033[37m`        | white             |
+| `Added` label    | `\033[32m`        | green             |
+| `Updated` label  | `\033[33m`        | yellow            |
+| `Deleted` label  | `\033[31m`        | red               |
+| `Renamed` label  | `\033[36m`        | cyan              |
+| File paths       | `\033[37m`        | white             |
+| Reset            | `\033[0m`         | —                 |
+
+### Example (literal bytes to print)
 
 ```
-75b6010 - Update gitconfig to use gitignore in home dir and update paths for android sdk
-├── Added
-│   ├── .gitignore_global
-│   └── android/local.properties
-└── Updated
-    └── .gitconfig
+\033[1;34m75b6010\033[0m - \033[37mUpdate gitconfig to use gitignore in home dir and update paths for android sdk\033[0m
+├── \033[32mAdded\033[0m
+│   ├── \033[37m.gitignore_global\033[0m
+│   └── \033[37mandroid/local.properties\033[0m
+└── \033[33mUpdated\033[0m
+    └── \033[37m.gitconfig\033[0m
 
-1ae7ed5 - Add error handling to setup.sh
-└── Updated
-    └── setup.sh
+\033[1;34m1ae7ed5\033[0m - \033[37mAdd error handling to setup.sh\033[0m
+└── \033[33mUpdated\033[0m
+    └── \033[37msetup.sh\033[0m
 ```
 
-If a commit touches no files (empty commit), print the header line followed by `└── (no file changes)`.
+If a commit touches no files (empty commit), print the header line followed by `└── (no file changes)` with `(no file changes)` in white.
 
 ## Anti-patterns
 
