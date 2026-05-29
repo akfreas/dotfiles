@@ -3,7 +3,7 @@ name: format-slack-message
 description: >-
   Compose a Slack-ready message from the user's request and load it onto the
   macOS clipboard as rich HTML so a single Cmd+V into Slack lands with full
-  formatting (bold, italic, inline code, code blocks, lists, links, quotes).
+  formatting (italic, inline code, code blocks, lists, links, quotes).
   Use this whenever the user asks for "a Slack message", "something I can
   paste into Slack", or invokes `/format-slack-message`.
 ---
@@ -19,7 +19,7 @@ Slack's desktop client reads the `public.html` pasteboard flavor when present an
 ## Procedure
 
 1. **Understand the message.** Confirm the audience, tone, and key points from the user's request. If the request is ambiguous (one-liner vs. multi-paragraph, casual vs. formal, channel vs. DM), ask one short clarifying question before composing.
-2. **Draft the message** in your head as Slack-flavored text — bold for emphasis or labels, inline code for filenames/commands/identifiers/error strings, code blocks for multi-line snippets, lists for enumerations, links for URLs.
+2. **Draft the message** in your head as Slack-flavored text: inline code for filenames/commands/identifiers/error strings, code blocks for multi-line snippets, lists for enumerations, links for URLs. Never use bold for emphasis or labels. Get the voice right while drafting, not as a cleanup pass — see "Tone and voice".
 3. **Render to HTML** using only the tag set in the mapping table below. Escape `&`, `<`, `>` inside literal content.
 4. **Pipe to the clipboard** via the helper:
    ```sh
@@ -38,7 +38,6 @@ Slack's desktop client reads the `public.html` pasteboard flavor when present an
 
 | HTML | Slack result |
 | --- | --- |
-| `<strong>` or `<b>` | **bold** |
 | `<em>` or `<i>` | _italic_ |
 | `<s>` or `<del>` | ~strikethrough~ |
 | `<code>` | `inline code` |
@@ -49,10 +48,34 @@ Slack's desktop client reads the `public.html` pasteboard flavor when present an
 | `<blockquote>…</blockquote>` | > quoted line |
 | `<br>` or `<p>` boundary | line break / paragraph break |
 
-Tags outside this table (headings, tables, images, divs with styles, spans with classes) are not reliably honored by Slack on paste — don't use them.
+Tags outside this table (headings, tables, images, divs with styles, spans with classes) are not reliably honored by Slack on paste, so don't use them. `<strong>` and `<b>` are deliberately excluded: never emit bold (see composition rules).
+
+## Tone and voice
+
+Write the way the user writes in Slack: casual, first-person, direct, human. It's a message to teammates, not a release note, a status bulletin, or an announcement.
+
+- **Greeting.** Open with a greeting to the readers. Default to "Hey team," unless the user names a specific audience when invoking the skill (e.g. a person, a channel, "the reviewers"), in which case greet them. Never lead with a label-style opener like "Heads up", "FYI", "Quick note", or "PSA".
+- **Own mistakes plainly.** When the message is about an error, say it straight: "I made a mistake with X." Do not soften it into euphemism or spin it as a neutral FYI.
+- **Plain everyday words over trendy or corporate register.** Prefer how a person actually talks. "merged to main" / "gets onto main", not "lands on main".
+- **Use contractions and natural connective phrasing.** "there's no content changes" reads human; a clipped "— no content changes" does not.
+- **Reference things in the flow of the sentence.** Name a PR/issue by its number inline ("the polyfill change in PR #288"); don't append its full title in parentheses.
+
+### Banned robot / corporate phrases
+
+These are high-frequency LLM and corporate-speak tics. They read as machine-written even when they're technically descriptive. Do not use them; rephrase in plain words or just cut them.
+
+- Opener/filler: "Heads up", "Just a heads up", "Quick note", "FYI", "PSA", "Wanted to flag", "Wanted to surface", "Circling back", "Looping in", "Touching base".
+- Euphemism for a mistake: "process slip", "small slip", "minor hiccup", "snag", "oversight occurred", "got crossed".
+- Buzz-verbs: "lands"/"landed" (for merged/shipped), "leverage", "surface", "flag" (as a verb), "loop in", "align on", "sync up", "circle back", "drive", "unblock", "action" (as a verb), "operationalize".
+- Hedge/padding: "just to be safe", "out of an abundance of caution", "for visibility", "as a quick aside", "at the end of the day", "to be clear" (when nothing was unclear).
+- Closing fluff: "Let me know if you have any questions!", "Happy to discuss further", "Thanks in advance for your attention to this", "Appreciate your support".
+
+Say what happened, what you need, and stop. A plain "Thanks!" is fine.
 
 ## Composition rules
 
+- **Never use bold.** Do not emit `<strong>` or `<b>`, ever. There is no acceptable use for bold in these messages: not for emphasis, not for labels, not for headings, not for the first word of a list item. If something feels like it needs emphasis, rephrase it or lean on sentence structure instead. The user does not write bold themselves and will not accept it in a message authored on their behalf.
+- **Never use an em dash (—).** Do not emit `—` (U+2014) anywhere in the message, and avoid the en dash (–, U+2013) too. When a sentence pulls toward an em dash, first restructure it: split into two sentences or join the clause with a comma, the way the user did ("re-targeted at main, there's no content changes"). Only if it genuinely still needs a dash, use a single hyphen-style dash (` - `) the way a person types in Slack. The goal is to avoid the dash construction in the first place, not to swap one dash glyph for another.
 - **Code spans for tokens, not sentences.** Wrap filenames (`publish-npm.yaml`), commands (`pnpm build:pkgs`), identifiers (`MyComponent`), env vars, file paths, and error strings. Don't wrap whole sentences in `<code>`.
 - **Code blocks for multi-line snippets.** Always `<pre><code>…</code></pre>` (Slack ignores bare `<pre>` for code styling). Include a language hint only if the user asked for one — Slack doesn't render it but it documents intent.
 - **Paragraphs.** Prefer `<p>…</p>` blocks for distinct paragraphs. Use `<br>` only for soft line breaks inside one paragraph (e.g., a signature).
