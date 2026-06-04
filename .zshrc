@@ -49,7 +49,6 @@ export GENERAL_PROFILE=$BASH_PROFILE_HOME/.general.profile
 export SASHIMIBLADE_PROFILE=$BASH_PROFILE_HOME/.sashimiblade.profile
 export VARIABLES=$BASH_PROFILE_HOME/variables.sh
 export FUNCTIONS=$BASH_PROFILE_HOME/functions.sh
-[ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 source $HOME/dotfiles/.colors
 source $GENERAL_PROFILE
 source $VARIABLES
