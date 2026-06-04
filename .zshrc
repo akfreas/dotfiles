@@ -83,8 +83,9 @@ _v="rv=%?"
 alias vi='vim'
 alias bpython="nocorrect bpython"
 alias knife="nocorrect knife"
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
+# rbenv: shims on PATH immediately; defer full init (rehash/hooks/completion) to first use
+export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
+rbenv() { unset -f rbenv; eval "$(command rbenv init -)"; rbenv "$@"; }
 export DIFF_OPTIONS=-u
 
 #unsetopt correct_all
@@ -148,7 +149,6 @@ export PROJECT_HOME=$HOME/Devel
 source virtualenvwrapper.sh
 export PATH="$HOME/.jenv/bin:$PATH"
 eval "$(jenv init -)"
-eval "$(rbenv init -)"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
