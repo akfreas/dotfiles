@@ -120,7 +120,10 @@ alias zless=$PAGER
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 
-eval "$(pyenv init --path)"
+# pyenv: shims on PATH immediately; defer full init to first use
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/shims:$PATH"
+pyenv() { unset -f pyenv; eval "$(command pyenv init - zsh)"; pyenv "$@"; }
 
 PATH=$PATH:~/.composer/vendor/bin
 
