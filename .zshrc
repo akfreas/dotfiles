@@ -149,7 +149,15 @@ export PATH="$HOME/.pyenv/bin:$PATH"
 
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Devel
-source virtualenvwrapper.sh
+# Lazy-load virtualenvwrapper on first use of one of its commands
+_load_virtualenvwrapper() {
+  unset -f workon mkvirtualenv rmvirtualenv mkproject lsvirtualenv allvirtualenv _load_virtualenvwrapper
+  source virtualenvwrapper.sh
+}
+for _vew_cmd in workon mkvirtualenv rmvirtualenv mkproject lsvirtualenv allvirtualenv; do
+  eval "${_vew_cmd}() { _load_virtualenvwrapper; ${_vew_cmd} \"\$@\"; }"
+done
+unset _vew_cmd
 # jenv: shims on PATH immediately; defer full init (hooks/completion) to first use
 export PATH="$HOME/.jenv/bin:$HOME/.jenv/shims:$PATH"
 jenv() { unset -f jenv; eval "$(command jenv init -)"; jenv "$@"; }
