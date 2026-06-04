@@ -147,8 +147,9 @@ export PATH="$HOME/.pyenv/bin:$PATH"
 export WORKON_HOME=$HOME/.virtualenvs
 export PROJECT_HOME=$HOME/Devel
 source virtualenvwrapper.sh
-export PATH="$HOME/.jenv/bin:$PATH"
-eval "$(jenv init -)"
+# jenv: shims on PATH immediately; defer full init (hooks/completion) to first use
+export PATH="$HOME/.jenv/bin:$HOME/.jenv/shims:$PATH"
+jenv() { unset -f jenv; eval "$(command jenv init -)"; jenv "$@"; }
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -168,7 +169,7 @@ unset __conda_setup
 
 # Added by Windsurf
 export PATH="$HOME/.local/bin:$PATH"
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home"
 export PATH="$JAVA_HOME/bin:$PATH"
 export ANDROID_HOME="/Users/alexander.freas/Library/Android/sdk"
 export ANDROID_SDK_ROOT="/Users/alexander.freas/Library/Android/sdk"
