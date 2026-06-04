@@ -106,7 +106,6 @@ export PS1='$(f_notifyme)'$PS1
 export GOPATH="$HOME/go"
 export PATH="/usr/local/go/bin:$PATH"
 export PATH="$HOME/.fastlane/bin:$PATH"
-export PATH="code:$PATH"
 
 alias less=$PAGER -i -R
 LESS="-i -R";
