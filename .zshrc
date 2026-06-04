@@ -107,10 +107,8 @@ export GOPATH="$HOME/go"
 export PATH="/usr/local/go/bin:$PATH"
 export PATH="$HOME/.fastlane/bin:$PATH"
 
-alias less=$PAGER -i -R
 LESS="-i -R";
 export LESS;
-alias zless=$PAGER
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
