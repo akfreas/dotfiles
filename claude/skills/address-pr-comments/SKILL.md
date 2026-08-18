@@ -76,12 +76,24 @@ For each finding pick one of:
 - **Manual fix** — autofix is wrong, over-scoped, or breaks something. Write the fix yourself.
 - **Dismiss** — false positive. Note the reason in the table; do not commit anything.
 
+#### Commit style for skill-authored commits
+
+Any commit **this skill writes itself** — every **manual fix**, and each commit produced when **splitting** a cherry-pick — MUST follow the `modular-commits` skill's rules:
+
+- **No Claude attribution.** No `Co-Authored-By: Claude` trailers, no "Generated with Claude Code" footer, no `--author` override — the commit is attributed to the machine's configured git user.
+- **Single-line imperative subject.** Capitalized first word, no trailing period, no `feat:`/`fix:` prefix, **no body** — match the canonical examples in the `modular-commits` skill.
+- **Modular.** One logical change per commit; stage deliberately with `git add <path>` / `git add -p`, never `git add -A`.
+
+The **cherry-pick (as-is)** path is the one documented exception: it keeps the `Cursor Agent <cursoragent@cursor.com>` author **and** the original commit's bullet body (see §5). The no-body / machine-author rules apply only to commits this skill authors.
+
 ### 5. Cherry-pick mechanics
 
 ```
 git cherry-pick <sha>                  # clean apply
 git cherry-pick --no-commit <sha>      # if you anticipate splitting
 ```
+
+When splitting (`--no-commit`, or `git reset --soft` after a clean apply), the resulting commits are **skill-authored** — re-stage with `git add -p` and write each one in the `modular-commits` style: single-line imperative subject, no body, no Claude attribution, machine git user. Do not carry the autofix's author or bullet body onto split commits.
 
 If it conflicts (very common when prior commits renumber things like preflight `[N/M]` labels):
 
@@ -147,6 +159,7 @@ Cherry-picked `a198f39e` from `cursor/encameracore-release-issues-05f0`. Verifie
 - [ ] Verified each finding against the actual cited code (false positives identified)
 - [ ] Cherry-picked or hand-fixed per the per-finding decision
 - [ ] Preserved `Cursor Agent` authorship on cherry-picks (with the bullet body intact)
+- [ ] Skill-authored commits (manual fixes + splits) follow `modular-commits`: single-line imperative, no body, no Claude attribution, machine git user
 - [ ] Parsed / dry-ran the affected scripts post-change
 - [ ] Reported findings as a Markdown table with the four columns above
 - [ ] Confirmed with the user before pushing (unless already in an iteration cycle)
