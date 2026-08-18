@@ -1,3 +1,4 @@
 *.xcuserstate
 **/IB\ Support
 Xcode/UserData/IB Support/
+.DS_Store
