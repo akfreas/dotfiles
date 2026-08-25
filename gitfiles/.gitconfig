@@ -40,3 +40,7 @@
 [http]
 	postBuffer = 10485760000
 
+
+[include]
+	# Machine-local settings (gh credential helper, etc). Not tracked.
+	path = ~/.gitconfig.local
