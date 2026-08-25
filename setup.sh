@@ -382,23 +382,101 @@ link_file "$SCRIPTPATH/gitfiles/.gitconfig" "$HOME/.gitconfig"
 # .gitconfig points core.excludesFile at ~/.gitignore
 link_file "$SCRIPTPATH/gitfiles/.gitignore" "$HOME/.gitignore"
 
+print_step "Setting up an SSH key for GitHub..."
+SSH_KEY="$HOME/.ssh/id_ed25519"
+EXISTING_PUB="$(ls "$HOME"/.ssh/id_*.pub 2>/dev/null | head -1)"
+if [ -n "$EXISTING_PUB" ]; then
+    print_info "SSH key already present: $EXISTING_PUB"
+else
+    mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+    if ssh-keygen -t ed25519 -C "$(git config --get user.email 2>/dev/null || whoami)" -f "$SSH_KEY" -N "" >/dev/null; then
+        EXISTING_PUB="$SSH_KEY.pub"
+        print_success "Generated $SSH_KEY"
+    else
+        print_error "Failed to generate an SSH key"
+    fi
+fi
+
+if [[ "$unamestr" == 'Darwin' ]] && [ -n "$EXISTING_PUB" ]; then
+    SSH_PRIV="${EXISTING_PUB%.pub}"
+    # Keep the key in the agent and the login keychain so it survives reboots
+    if ! grep -q '^Host github.com$' "$HOME/.ssh/config" 2>/dev/null; then
+        printf '\nHost github.com\n  AddKeysToAgent yes\n  UseKeychain yes\n  IdentityFile %s\n' "$SSH_PRIV" >> "$HOME/.ssh/config"
+        chmod 600 "$HOME/.ssh/config"
+        print_success "Added a github.com entry to ~/.ssh/config"
+    else
+        print_info "~/.ssh/config already has a github.com entry"
+    fi
+    ssh-add --apple-use-keychain "$SSH_PRIV" >/dev/null 2>&1 || ssh-add -K "$SSH_PRIV" >/dev/null 2>&1
+fi
+
+# Does SSH actually get us into GitHub? Success exits non-zero, so match the banner.
+github_ssh_works() {
+    ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 \
+        -T git@github.com 2>&1 | grep -q 'successfully authenticated'
+}
+
+# Adding a key needs a scope the default login does not request.
+upload_ssh_key_to_github() {
+    [ -n "$EXISTING_PUB" ] || { print_warning "No SSH public key to upload"; return 1; }
+    print_info "Registering $EXISTING_PUB with GitHub..."
+    if ! gh auth refresh -h github.com -s admin:public_key; then
+        print_error "Could not obtain the admin:public_key scope, run: gh auth refresh -h github.com -s admin:public_key"
+        return 1
+    fi
+    if gh ssh-key add "$EXISTING_PUB" --title "$(scutil --get ComputerName 2>/dev/null || hostname)"; then
+        print_success "SSH key added to your GitHub account"
+    else
+        print_warning "Could not add the SSH key (it may already be registered)"
+    fi
+}
+
 print_step "Setting up the GitHub CLI..."
 if ! command -v gh >/dev/null 2>&1; then
     print_error "gh is not installed, skipping GitHub CLI setup"
-elif gh auth status >/dev/null 2>&1; then
-    print_success "GitHub CLI already authenticated ($(gh api user --jq .login 2>/dev/null || echo 'unknown user'))"
-elif [ -t 0 ]; then
-    # Prompts to generate and upload an SSH key too, which is what a fresh machine needs.
-    # No `gh auth setup-git`: remotes are SSH and .gitconfig already sets osxkeychain,
-    # and it would write machine-local paths into the tracked gitconfig.
-    print_info "Authenticating the GitHub CLI - a browser window will open..."
-    if gh auth login --hostname github.com --git-protocol ssh --web; then
-        print_success "GitHub CLI authenticated"
-    else
-        print_error "GitHub CLI authentication failed, run it by hand: gh auth login"
-    fi
 else
-    print_warning "No terminal attached, GitHub CLI left unauthenticated - run: gh auth login"
+    if gh auth status >/dev/null 2>&1; then
+        print_success "GitHub CLI already authenticated ($(gh api user --jq .login 2>/dev/null || echo 'unknown user'))"
+    elif [ -t 0 ]; then
+        print_info "Authenticating the GitHub CLI - a browser window will open..."
+        if gh auth login --hostname github.com --git-protocol ssh --web; then
+            print_success "GitHub CLI authenticated"
+        else
+            print_error "GitHub CLI authentication failed, run it by hand: gh auth login"
+        fi
+    else
+        print_warning "No terminal attached, GitHub CLI left unauthenticated - run: gh auth login"
+    fi
+
+    if gh auth status >/dev/null 2>&1; then
+        print_step "Checking SSH access to GitHub..."
+        if github_ssh_works; then
+            print_success "SSH access to GitHub is working - private clones and pushes will authenticate"
+        elif [ -t 0 ]; then
+            upload_ssh_key_to_github
+            if github_ssh_works; then
+                print_success "SSH access to GitHub is working"
+            else
+                print_error "SSH to GitHub still failing, check: ssh -T git@github.com"
+            fi
+        else
+            print_warning "SSH to GitHub not working and no terminal to fix it - run: gh auth refresh -h github.com -s admin:public_key && gh ssh-key add $EXISTING_PUB"
+        fi
+
+        # Wire gh in as the credential helper for HTTPS remotes. This goes in an
+        # untracked local config: the global .gitconfig is a symlink into this repo
+        # and must not collect machine-specific binary paths.
+        print_step "Configuring git credentials for HTTPS remotes..."
+        GH_BIN="$(command -v gh)"
+        GIT_LOCAL="$HOME/.gitconfig.local"
+        git config --file "$GIT_LOCAL" --unset-all credential."https://github.com".helper 2>/dev/null
+        git config --file "$GIT_LOCAL" --add credential."https://github.com".helper ""
+        if git config --file "$GIT_LOCAL" --add credential."https://github.com".helper "!$GH_BIN auth git-credential"; then
+            print_success "gh registered as the HTTPS credential helper in $GIT_LOCAL"
+        else
+            print_error "Failed to configure the HTTPS credential helper"
+        fi
+    fi
 fi
 
 print_step "Setting up Claude Code skills..."
@@ -518,7 +596,49 @@ else
     fi
 fi
 
+print_step "Signing in to Claude Code..."
+if ! command -v claude >/dev/null 2>&1; then
+    print_error "claude is not on PATH, skipping sign-in"
+elif claude auth status 2>/dev/null | grep -q '"loggedIn"[[:space:]]*:[[:space:]]*true'; then
+    print_success "Claude Code already signed in ($(claude auth status 2>/dev/null | sed -n 's/.*"email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'))"
+elif [ -t 0 ]; then
+    print_info "Signing in to Claude Code - a browser window will open..."
+    if claude auth login; then
+        print_success "Claude Code signed in"
+    else
+        print_error "Claude Code sign-in failed, run it by hand: claude auth login"
+    fi
+else
+    print_warning "No terminal attached, Claude Code left signed out - run: claude auth login"
+fi
+
 cd "$SCRIPTPATH" || true
+
+# ---------------------------------------------------------------------------
+# Verify the things you actually need working, rather than assuming the
+# install steps above were enough.
+# ---------------------------------------------------------------------------
+echo ""
+print_step "Verifying sign-in state..."
+
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    print_success "gh: signed in as $(gh api user --jq .login 2>/dev/null || echo 'unknown')"
+else
+    print_error "gh: NOT signed in - run: gh auth login"
+fi
+
+if command -v claude >/dev/null 2>&1 && claude auth status 2>/dev/null | grep -q '"loggedIn"[[:space:]]*:[[:space:]]*true'; then
+    print_success "claude: signed in as $(claude auth status 2>/dev/null | sed -n 's/.*"email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+else
+    print_error "claude: NOT signed in - run: claude auth login"
+fi
+
+if ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 \
+       -T git@github.com 2>&1 | grep -q 'successfully authenticated'; then
+    print_success "github ssh: working - you can clone and push private repos over SSH"
+else
+    print_error "github ssh: NOT working - run: ssh -T git@github.com to diagnose"
+fi
 
 echo ""
 echo "════════════════════════════════════════════════════════════════"
