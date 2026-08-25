@@ -87,6 +87,19 @@ else
     print_info "Xcode UserData directory not found, skipping"
 fi
 
+print_step "Setting up VSCode configuration..."
+VSCODE_USER="$HOME/Library/Application Support/Code/User"
+if [ -d "$VSCODE_USER" ]; then
+    for f in settings.json keybindings.json; do
+        [ -e "$VSCODE_USER/$f" ] && [ ! -L "$VSCODE_USER/$f" ] && mv "$VSCODE_USER/$f" "$VSCODE_USER/$f.bak"
+        rm -f "$VSCODE_USER/$f"
+        ln -s "$SCRIPTPATH/VSCode/$f" "$VSCODE_USER/$f"
+    done
+    print_success "VSCode configuration linked"
+else
+    print_info "VSCode User directory not found, skipping"
+fi
+
 print_step "Setting up Vim configuration..."
 mv ~/.vimrc ~/.vimrc-bak || true
 ln -s $SCRIPTPATH/.vimrc ~/.vimrc
