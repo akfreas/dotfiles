@@ -2,13 +2,13 @@
   "javascript.validate.enable": false,
   "files.autoSave": "onFocusChange",
   "files.associations": {
-    "*.svg": "html"
+    "*.svg": "html",
   },
   "search.exclude": {
     "**/.serverless": true,
     "**/.webpack": true,
     "**/node_modules": true,
-    ".yarn": true
+    ".yarn": true,
   },
   "jest.runAllTestsFirst": false,
   "jest.autoEnable": false,
@@ -19,24 +19,25 @@
   "eslint.packageManager": "yarn",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit",
     "source.addMissingImports": "explicit",
-    "source.organizeImports": "explicit"
   },
+  "prettier.disableLanguages": [],
   "python.formatting.provider": "black",
   "editor.tabSize": 2,
   "eslint.run": "onSave",
   "eslint.lintTask.enable": true,
   "eslint.alwaysShowStatus": true,
-  "eslint.format.enable": true,
-  "javascript.format.enable": true,
+  "eslint.format.enable": false,
+  "javascript.format.enable": false,
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
-    "typescriptreact"
+    "typescriptreact",
   ],
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "yaml.customTags": [
     "!And",
@@ -65,78 +66,109 @@
     "!Select",
     "!Select sequence",
     "!Split",
-    "!Split sequence"
+    "!Split sequence",
   ],
   "yaml.validate": false,
   "[html]": {
-    "editor.defaultFormatter": "vscode.html-language-features"
+    "editor.defaultFormatter": "vscode.html-language-features",
   },
   "workbench.editorAssociations": {
-    "*.ipynb": "jupyter.notebook.ipynb"
+    "*.ipynb": "jupyter.notebook.ipynb",
   },
-  "cSpell.userWords": ["architected", "onboarded", "Tettra"],
+  "cSpell.userWords": ["architected", "onboarded", "supabase", "Tettra"],
   "editor.minimap.enabled": false,
   "redhat.telemetry.enabled": false,
   "editor.tabCompletion": "on",
   "[javascript]": {
     "editor.maxTokenizationLineLength": 2500,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "editor.unicodeHighlight.ambiguousCharacters": false,
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "editor.inlineSuggest.enabled": true,
   "github.copilot.enable": {
     "*": true,
     "yaml": true,
     "plaintext": false,
-    "markdown": false
+    "markdown": false,
   },
   "files.exclude": {
     "**/.serverless": true,
     "**/.webpack": true,
     "**/node_modules": true,
-    ".yarn": true
+    ".yarn": true,
   },
   "[python]": {
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
   },
   "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml"
+    "editor.defaultFormatter": "redhat.vscode-yaml",
   },
-  "python.defaultInterpreterPath": "/Users/akfreas/.virtualenvs/truffle-deploy",
+  "python.defaultInterpreterPath": "/Users/akfreas/.virtualenvs/encamera",
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
-  "editor.defaultFormatter": "hb432.prettier-eslint-typescript",
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier-eslint-typescript.prettierOptions": {},
   "git.openRepositoryInParentFolders": "never",
   "editor.defaultFoldingRangeProvider": "dbaeumer.vscode-eslint",
-  "prettier.configPath": ".prettierrc",
-  "terminal.integrated.defaultProfile.osx": "bash",
+  "prettier.configPath": ".prettierrc.json",
+  "prettier.requireConfig": false,
+  "prettier.enable": true,
+  "prettier.ignorePath": ".prettierignore",
+  "terminal.integrated.defaultProfile.osx": "zsh",
   "[vue]": {
-    "editor.defaultFormatter": "Vue.volar"
+    "editor.defaultFormatter": "Vue.volar",
   },
   "workbench.preferredDarkColorTheme": "Default Dark+",
   "laravel-pint.enable": true,
   "editor.formatOnSave": true,
-
   "php.validate.executablePath": "/usr/local/bin/php",
   "[php]": {
     "editor.defaultFormatter": "open-southeners.laravel-pint",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
   },
   "phpcs.executablePath": "/Users/akfreas/.composer/vendor/bin/phpcs",
   "editor.gotoLocation.multipleDefinitions": "goto",
   "github.copilot.editor.enableAutoCompletions": true,
   "window.confirmBeforeClose": "keyboardOnly",
   "[blade]": {
-    "editor.defaultFormatter": "shufo.vscode-blade-formatter"
+    "editor.defaultFormatter": "shufo.vscode-blade-formatter",
   },
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "workbench.colorTheme": "Default Dark+"
+  "diffEditor.ignoreTrimWhitespace": false,
+  "window.zoomPerWindow": false,
+  "[dockercompose]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "workbench.editor.enablePreview": false,
+  "window.autoDetectColorScheme": false,
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml",
+  ],
 }
