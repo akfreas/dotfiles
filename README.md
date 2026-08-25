@@ -40,12 +40,30 @@ Both forms are idempotent — re-run the script any time to pick up changes or r
 - Homebrew casks: `iterm2`, `visual-studio-code`
 - Oh My Zsh, installed unattended so it doesn't clobber the symlinked `.zshrc`
 - zsh set as the login shell
-- Claude Code, via the official native installer
-- GitHub CLI authentication — `gh auth login --git-protocol ssh --web`, which also offers to generate an SSH key and add it to your GitHub account
+- Claude Code, via the official native installer, then signed in with `claude auth login`
+- GitHub CLI, signed in with `gh auth login --git-protocol ssh --web`
+- An `ed25519` SSH key, generated if you don't already have one, added to the agent and the login keychain, and uploaded to your GitHub account
 
 `git` comes from Homebrew rather than the Command Line Tools; the script verifies that `git` on `PATH` actually resolves to the Homebrew build and warns if something is shadowing it.
 
-The `gh` login is interactive, so it only runs when a terminal is attached. Under `curl | bash` the script reattaches `/dev/tty` when there is one, so the piped install can still prompt for it (and for `sudo`); with no terminal at all it skips the login and tells you to run `gh auth login` yourself.
+### Sign-in
+
+The script logs you in rather than just installing the binaries. It ends with a verification block that checks all three and reports each one explicitly:
+
+```
+🔵 Verifying sign-in state...
+✅ gh: signed in as akfreas
+✅ claude: signed in as alex@freas.me
+✅ github ssh: working - you can clone and push private repos over SSH
+```
+
+Anything not working is reported as an error with the command to fix it, and the script exits non-zero.
+
+Uploading an SSH key needs the `admin:public_key` scope, which a default `gh auth login` does not request, so the script runs `gh auth refresh` for it — but only if SSH to GitHub isn't already working.
+
+For HTTPS remotes, `gh` is registered as the git credential helper. That gets written to `~/.gitconfig.local`, not the global config, because `~/.gitconfig` is a symlink into this repo and must not collect machine-specific binary paths. The tracked `.gitconfig` pulls it in with an `[include]`.
+
+All of these are interactive, so they only run when a terminal is attached. Under `curl | bash` the script reattaches `/dev/tty` when there is one, so the piped install can still prompt (this is also what makes `sudo` work). With no terminal at all it skips the logins and tells you which commands to run yourself.
 
 **Symlinks** (anything already in place is backed up to `<name>.bak.<timestamp>` first)
 
