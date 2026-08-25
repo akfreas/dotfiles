@@ -184,3 +184,6 @@ export ANDROID_HOME="/Users/alexander.freas/Library/Android/sdk"
 export ANDROID_SDK_ROOT="/Users/alexander.freas/Library/Android/sdk"
 export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+# Added by cua-driver-rs installer — see https://github.com/trycua/cua
+export PATH="/Users/akfreas/.local/bin:$PATH"
