@@ -1,39 +1,48 @@
 ---
 name: create-pr
 description: >-
-  Create a GitHub PR from the current branch. The skill picks the base branch
-  via a prompt (default `origin/main`, with manual entry), generates a PR title
-  and short lead-in description from the commits and diff, lets the user accept
-  them or supply their own, drafts the body in a strict concise format, gets the
-  user's approval, then opens the PR via `gh`.
+  Create a GitHub PR from the current branch. Runs fully automatically by
+  default: bases on `origin/main`, generates the title, description and body
+  from the commits and diff, and opens the PR ready for review without any
+  prompts. The user can override the base branch, title, description, or ask
+  for a draft in their request; only then does the skill deviate.
 ---
 
 # Create PR
 
-Use this skill when the user asks to open a pull request. The skill is interactive: it proposes a base branch, a title, and a short description, and lets the user accept each or override it. Three things drive the PR — do not silently invent the final values, prompt for them:
+Use this skill when the user asks to open a pull request.
 
-1. **Base branch** — proposed as `origin/main` by default, with manual entry.
-2. **PR title** — generated from the commits and diff, with the option to enter one.
-3. **Short description** — one or two sentences that lead the PR body, generated, with the option to enter one.
+**The skill is non-interactive by default.** Do not ask the user anything — not about the base branch, not about the title or description, not for approval of the body. Generate everything, open the PR, report the URL. The point is to open PRs in one shot without repeating the same answers every time.
+
+## Defaults
+
+Unless the user's request says otherwise, use these without asking:
+
+| Thing | Default |
+| --- | --- |
+| Base branch | `origin/main` |
+| Title | generated from the commits and diff |
+| Short description | generated from the commits and diff |
+| Body | drafted per the format below |
+| Draft vs ready | **ready for review** (no `--draft`) |
+
+## Honoring overrides
+
+The user can override any default by saying so in their request — "base it on develop", "open it as a draft", "title it X", "use this description: …". Take whatever they supply verbatim; do not paraphrase a user-supplied title or description. An override for one thing does not turn the rest of the run interactive: everything they did not mention still uses its default.
+
+Only ask a question if the request is genuinely ambiguous in a way that changes the PR (for example they name a base branch that does not exist). Never ask merely to confirm a default.
 
 ## Base-branch convention
 
-When a branch name like `main` or `develop` is in play, it means `origin/main` / `origin/develop` — the remote tip, not the local branch. Every `git` command in this skill that takes a base reference MUST use `origin/<name>`. If the user types a bare name when entering one manually, resolve it to `origin/<name>` and say so once in your first status update so they can correct you if they meant an upstream other than `origin` or a local branch deliberately.
+When a branch name like `main` or `develop` is in play, it means `origin/main` / `origin/develop` — the remote tip, not the local branch. Every `git` command in this skill that takes a base reference MUST use `origin/<name>`. If the user types a bare name, resolve it to `origin/<name>` and say so once in your status output so they can correct you if they meant an upstream other than `origin` or a local branch deliberately.
 
 Before using the remote ref, run `git fetch origin <base>` so `origin/<base>` is up to date. Do not pull. Do not merge. Do not rebase. The fetch is read-only.
 
 ## Procedure
 
-### 1. Choose the base branch
+### 1. Resolve the base branch
 
-Ask with `AskUserQuestion`. Header `Base branch`. Options, in this order:
-
-1. **`origin/main` (Recommended)** — the usual base.
-2. **`origin/develop`** — include only if the repo actually has a `develop` branch (check `git branch -r`); otherwise omit it.
-
-The user can always pick "Other" to type a base branch manually. Resolve whatever they enter per the base-branch convention above (`origin/<name>`).
-
-If the user already named a base branch explicitly in their request, skip this prompt and use it.
+`origin/main`, unless the user named one. No prompt.
 
 ### 2. Refresh the base ref, then check for divergence
 
@@ -47,6 +56,8 @@ Interpret:
 - `ahead == 0` → branch has no new commits. Stop and tell the user.
 - `behind > 0` → `origin/<base>` has commits the branch doesn't. **STOP.** Do not open the PR. Report the count and the list (`git log --oneline HEAD..origin/<base>`) so the user can rebase or merge themselves. Do not pull, merge, or rebase on their behalf. Do not offer to.
 - `behind == 0 && ahead > 0` → proceed.
+
+These are hard blockers, not preference questions — stopping here is correct even in auto mode.
 
 ### 3. Gather commit context
 
@@ -63,21 +74,9 @@ From the commits and the diff stat, write:
 - A **title** — a single concise line naming what the changeset actually is. Imperative mood, no trailing period, no PR number, no type prefix unless the repo's existing titles use one.
 - A **short description** — one or two sentences that honestly summarize what's changing, suitable as the lead of the PR body.
 
-Make these reflect the *whole* diff, not just the first commit. If the commits include unrelated work (orphan refactor, drive-by edits to a different module), do not paper over it — note it to the user so they can decide whether to drop those commits or widen the description. If the diff is genuinely grab-bag and no honest one-line summary exists, say so rather than inventing a tidy story.
+Make these reflect the *whole* diff, not just the first commit. If the commits include unrelated work (orphan refactor, drive-by edits to a different module), do not paper over it — cover it in the description and mention it in your final report so the user can decide whether to drop those commits. If the diff is genuinely grab-bag and no honest one-line summary exists, say so plainly in the description rather than inventing a tidy story.
 
-### 5. Offer the title and description, let the user override
-
-Show the generated title and short description, then ask with `AskUserQuestion`. Header `Title & desc`. Options, in this order:
-
-1. **Use generated (Recommended)** — accept both as shown.
-2. **Edit description only** — keep the title, supply a new description.
-3. **Edit title only** — keep the description, supply a new title.
-
-The user can pick "Other" to provide both their own title and description. If they choose any edit/override path, collect the new text conversationally (or via the "Other" free-text box), then re-show the final title and description in one short confirmation line before drafting the body.
-
-Treat whatever the user supplies as authoritative — do not paraphrase a user-supplied title or description.
-
-### 6. Draft the body
+### 5. Draft the body
 
 The body MUST follow this exact shape:
 
@@ -138,39 +137,29 @@ Add the ability to pinch-to-zoom using gestures on the camera, much like the sys
 - As camera is zooming, the `CameraZoomControlIndicator` for the zoom level also update
 ```
 
-### 7. Get explicit approval
+### 6. Create the PR
 
-Show the user the full drafted body in a fenced block, then ask for approval with `AskUserQuestion`. Options, in this exact order (the first is the default when the user presses enter):
-
-1. **Open as draft** — default. Opens the PR with `--draft`.
-2. **Open as ready** — opens the PR without `--draft`.
-3. **Edit** — revise the body.
-4. **Cancel** — abort.
-
-Do not call `gh pr create` before the user picks one of the open options. If they pick edit, revise and re-show. Loop until they approve or cancel.
-
-### 8. Create the PR
-
-Once approved, push the branch if it has no upstream (`git push -u origin <branch>`), then:
+Push the branch if it has no upstream (`git push -u origin <branch>`), then:
 
 ```
-gh pr create [--draft] --base <base> --title "<final title>" --body "$(cat <<'EOF'
-<approved body>
+gh pr create --base <base> --title "<final title>" --body "$(cat <<'EOF'
+<body>
 EOF
 )"
 ```
 
-Include `--draft` if the user picked "Open as draft" (the default), omit it if they picked "Open as ready".
+Open it ready for review — omit `--draft` unless the user asked for a draft, in which case add it.
 
 Note: `gh pr create --base` takes the bare branch name (e.g. `main`), not `origin/main`. The `origin/` prefix is for local `git` commands only.
 
 Use a HEREDOC for the body — never inline it as a single `--body` string, since the body contains newlines and backticks.
 
-Return the PR URL `gh` prints.
+### 7. Report
+
+Return the PR URL `gh` prints, plus the base branch and the title you used, so the user can see what was opened and fix it if a generated value missed. Editing an already-open PR is cheap; blocking on a prompt every time is not.
 
 ## Notes
 
-- Generated values are proposals, not final: always run the step 5 prompt and the step 7 approval before opening the PR. Whatever the user supplies overrides the generated text verbatim.
 - Never push to `main`/`master`. If the current branch is the base branch, stop and tell the user.
 - Do not skip hooks, do not force-push.
 - Do not pull, merge, or rebase to resolve divergence in step 2 — that's the user's call.
