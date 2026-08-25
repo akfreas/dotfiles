@@ -134,7 +134,8 @@
   "[vue]": {
     "editor.defaultFormatter": "Vue.volar",
   },
-  "workbench.preferredDarkColorTheme": "Default Dark+",
+  "workbench.colorTheme": "Cursor Dark",
+  "workbench.preferredDarkColorTheme": "Dark+",
   "laravel-pint.enable": true,
   "editor.formatOnSave": true,
   "php.validate.executablePath": "/usr/local/bin/php",
