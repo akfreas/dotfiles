@@ -178,7 +178,13 @@ if [ -z "$SCRIPTPATH" ] || [ ! -f "$SCRIPTPATH/.zshrc" ]; then
         fi
     fi
 
-    exec bash "$DOTFILES_DIR/setup.sh" "$@"
+    # stdin is the curl pipe at this point, which leaves sudo and `gh auth login`
+    # with nothing to read from. Reattach the terminal when there is one.
+    if [ -e /dev/tty ]; then
+        exec bash "$DOTFILES_DIR/setup.sh" "$@" < /dev/tty
+    else
+        exec bash "$DOTFILES_DIR/setup.sh" "$@"
+    fi
 fi
 
 echo -e "${PURPLE}🚀 Starting dotfiles setup...${NC}"
@@ -311,6 +317,16 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
             print_error "Failed to install some Homebrew formulae"
         fi
 
+        # The Command Line Tools ship their own git; make sure the Homebrew one wins.
+        BREW_GIT="$(brew --prefix)/bin/git"
+        if [ ! -x "$BREW_GIT" ]; then
+            print_error "Homebrew git not found at $BREW_GIT"
+        elif [ "$(command -v git)" = "$BREW_GIT" ]; then
+            print_success "git is the Homebrew build ($(git --version))"
+        else
+            print_warning "git resolves to $(command -v git), not the Homebrew build at $BREW_GIT - check the PATH order in .zshrc"
+        fi
+
         print_step "Installing Homebrew casks..."
         brew install --cask iterm2 visual-studio-code
         if [ $? -eq 0 ]; then
@@ -365,6 +381,25 @@ print_step "Setting up Git configuration..."
 link_file "$SCRIPTPATH/gitfiles/.gitconfig" "$HOME/.gitconfig"
 # .gitconfig points core.excludesFile at ~/.gitignore
 link_file "$SCRIPTPATH/gitfiles/.gitignore" "$HOME/.gitignore"
+
+print_step "Setting up the GitHub CLI..."
+if ! command -v gh >/dev/null 2>&1; then
+    print_error "gh is not installed, skipping GitHub CLI setup"
+elif gh auth status >/dev/null 2>&1; then
+    print_success "GitHub CLI already authenticated ($(gh api user --jq .login 2>/dev/null || echo 'unknown user'))"
+elif [ -t 0 ]; then
+    # Prompts to generate and upload an SSH key too, which is what a fresh machine needs.
+    # No `gh auth setup-git`: remotes are SSH and .gitconfig already sets osxkeychain,
+    # and it would write machine-local paths into the tracked gitconfig.
+    print_info "Authenticating the GitHub CLI - a browser window will open..."
+    if gh auth login --hostname github.com --git-protocol ssh --web; then
+        print_success "GitHub CLI authenticated"
+    else
+        print_error "GitHub CLI authentication failed, run it by hand: gh auth login"
+    fi
+else
+    print_warning "No terminal attached, GitHub CLI left unauthenticated - run: gh auth login"
+fi
 
 print_step "Setting up Claude Code skills..."
 link_file "$SCRIPTPATH/claude/skills" "$HOME/.claude/skills"
