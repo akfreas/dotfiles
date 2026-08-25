@@ -1,6 +1,22 @@
+#!/usr/bin/env bash
+#
+# dotfiles setup
+#
+# Remote (fresh machine, nothing installed):
+#   curl -fsSL https://raw.githubusercontent.com/akfreas/dotfiles/master/setup.sh | bash
+#
+# Local (repo already cloned):
+#   ./setup.sh
+#
+# Override the clone location with DOTFILES_DIR, the source with DOTFILES_REPO.
+# Note that .zshrc hardcodes $HOME/dotfiles, so moving the repo needs a matching edit there.
+
 # Don't exit on error - we want to continue and report all errors at the end
 set +e
-SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+
+DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/akfreas/dotfiles.git}"
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 
 # Colors
 RED='\033[0;31m'
@@ -62,94 +78,132 @@ check_status() {
     return 0
 }
 
+# Symlink $2 -> $1, backing up whatever was already there.
+link_file() {
+    local src="$1"
+    local dest="$2"
+
+    if [ ! -e "$src" ]; then
+        print_warning "Nothing to link, source missing: $src"
+        return 1
+    fi
+
+    mkdir -p "$(dirname "$dest")"
+
+    if [ -L "$dest" ]; then
+        if [ "$(readlink "$dest")" = "$src" ]; then
+            print_info "Already linked: $dest"
+            return 0
+        fi
+        rm -f "$dest"
+    elif [ -e "$dest" ]; then
+        mv "$dest" "$dest.bak.$TIMESTAMP"
+        print_info "Backed up $dest -> $dest.bak.$TIMESTAMP"
+    fi
+
+    if ln -s "$src" "$dest"; then
+        print_success "Linked $dest -> $src"
+    else
+        print_error "Failed to link $dest -> $src"
+        return 1
+    fi
+}
+
+# git and the compilers all come from the Command Line Tools, so this runs before anything else.
+ensure_xcode_clt() {
+    [ "$(uname)" = "Darwin" ] || return 0
+
+    if xcode-select -p >/dev/null 2>&1; then
+        print_success "Xcode Command Line Tools already installed"
+        return 0
+    fi
+
+    print_info "Installing Xcode Command Line Tools (a GUI dialog will appear)..."
+    xcode-select --install >/dev/null 2>&1
+
+    print_info "Waiting for the Command Line Tools install to finish..."
+    local waited=0
+    until xcode-select -p >/dev/null 2>&1; do
+        sleep 10
+        waited=$((waited + 10))
+        if [ "$waited" -ge 1800 ]; then
+            print_error "Timed out after 30 minutes waiting for Xcode Command Line Tools"
+            return 1
+        fi
+    done
+
+    print_success "Xcode Command Line Tools installed"
+}
+
+# Put brew on PATH if it's installed but the shell hasn't been reloaded yet.
+load_homebrew_shellenv() {
+    command -v brew >/dev/null 2>&1 && return 0
+    local candidate
+    for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+        if [ -x "$candidate" ]; then
+            eval "$("$candidate" shellenv)"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# ---------------------------------------------------------------------------
+# Bootstrap: when piped from curl there is no repo on disk yet, so clone it
+# and re-exec from the clone.
+# ---------------------------------------------------------------------------
+resolve_scriptpath() {
+    local src="${BASH_SOURCE[0]:-$0}"
+    [ -f "$src" ] && (cd "$(dirname "$src")" && pwd -P)
+}
+
+SCRIPTPATH="$(resolve_scriptpath)"
+
+# .zshrc is the marker for "the whole repo is here", not just this one file.
+if [ -z "$SCRIPTPATH" ] || [ ! -f "$SCRIPTPATH/.zshrc" ]; then
+    echo -e "${PURPLE}🚀 Bootstrapping dotfiles from $DOTFILES_REPO${NC}"
+    ensure_xcode_clt
+
+    if [ -d "$DOTFILES_DIR/.git" ]; then
+        print_info "Updating existing clone at $DOTFILES_DIR"
+        git -C "$DOTFILES_DIR" pull --ff-only || print_warning "Could not fast-forward $DOTFILES_DIR, using it as-is"
+    elif [ -e "$DOTFILES_DIR" ]; then
+        echo -e "${RED}❌ $DOTFILES_DIR exists but is not a git clone. Move it aside and re-run.${NC}"
+        exit 1
+    else
+        print_info "Cloning into $DOTFILES_DIR"
+        if ! git clone "$DOTFILES_REPO" "$DOTFILES_DIR"; then
+            echo -e "${RED}❌ Failed to clone $DOTFILES_REPO${NC}"
+            exit 1
+        fi
+    fi
+
+    exec bash "$DOTFILES_DIR/setup.sh" "$@"
+fi
+
 echo -e "${PURPLE}🚀 Starting dotfiles setup...${NC}"
 echo -e "${CYAN}📁 Script path: $SCRIPTPATH${NC}"
 echo ""
 
-
-print_step "Setting up iTerm2 preferences..."
-if [ -d "~/Library/Preferences/com.googlecode.iterm2.plist" ];
-then
-    rm ~/Library/Preferences/com.googlecode.iterm2.plist
-    ln -s $SCRIPTPATH/com.googlecode.iterm2.plist ~/Library/Preferences/com.googlecode.iterm2.plist
-    print_success "iTerm2 preferences linked"
-else
-    print_info "iTerm2 preferences directory not found, skipping"
+if [ "$SCRIPTPATH" != "$HOME/dotfiles" ]; then
+    print_warning "Repo lives at $SCRIPTPATH but .zshrc hardcodes \$HOME/dotfiles - the shell config will not load until one of the two is changed"
 fi
 
-print_step "Setting up Xcode preferences..."
-if [ -d "~/Library/Developer/Xcode/UserData" ];
-then
-    rm -rf ~/Library/Developer/Xcode/UserData
-    ln -s $SCRIPTPATH/Xcode/UserData  ~/Library/Developer/Xcode/UserData
-    print_success "Xcode preferences linked"
-else
-    print_info "Xcode UserData directory not found, skipping"
-fi
+unamestr=$(uname)
 
-print_step "Setting up VSCode configuration..."
-VSCODE_USER="$HOME/Library/Application Support/Code/User"
-if [ -d "$VSCODE_USER" ]; then
-    for f in settings.json keybindings.json; do
-        [ -e "$VSCODE_USER/$f" ] && [ ! -L "$VSCODE_USER/$f" ] && mv "$VSCODE_USER/$f" "$VSCODE_USER/$f.bak"
-        rm -f "$VSCODE_USER/$f"
-        ln -s "$SCRIPTPATH/VSCode/$f" "$VSCODE_USER/$f"
-    done
-    print_success "VSCode configuration linked"
-else
-    print_info "VSCode User directory not found, skipping"
-fi
-
-print_step "Setting up Vim configuration..."
-mv ~/.vimrc ~/.vimrc-bak || true
-ln -s $SCRIPTPATH/.vimrc ~/.vimrc
-print_success "Vim configuration linked"
-
-print_step "Setting up Git configuration..."
-mv ~/.gitconfig ~/.gitconfig.bak || true
-ln -s $SCRIPTPATH/gitfiles/.gitconfig ~/.gitconfig
-print_success "Git configuration linked"
-
-print_step "Installing Vim Pathogen..."
-mkdir -p ~/.vim/autoload ~/.vim/bundle
-curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
-if [ $? -eq 0 ]; then
-    print_success "Pathogen installed"
-else
-    print_error "Failed to install Pathogen"
-fi
-
-print_step "Installing Vim plugins..."
-cd ~/.vim/bundle
-if [ ! -d "./vim-bundler" ];
-then
-    print_info "Cloning vim-bundler..."
-    git clone https://github.com/tpope/vim-bundler.git
-    print_success "vim-bundler installed"
-else
-    print_info "vim-bundler already installed"
-fi;
-
-if [ ! -d "./Vundle.vim" ];
-then
-    print_info "Cloning Vundle.vim..."
-    git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-    print_success "Vundle.vim installed"
-else
-    print_info "Vundle.vim already installed"
-fi
-
-unamestr=`uname`
+# ---------------------------------------------------------------------------
+# Platform packages - everything below depends on these being present
+# ---------------------------------------------------------------------------
 if [[ "$unamestr" == 'Linux' ]]; then
     echo ""
     print_step "🐧 Detected Linux system - starting Linux-specific setup..."
-    
+
     print_step "Removing old Vim packages..."
     sudo apt-get remove --yes vim vim-runtime gvim vim-tiny vim-common vim-gui-common vim-nox
     print_success "Old Vim packages removed"
 
     print_step "Installing apt packages..."
-    cat $SCRIPTPATH/apt-packages.txt | xargs sudo apt-get --yes --force-yes install
+    cat "$SCRIPTPATH/apt-packages.txt" | xargs sudo apt-get --yes --force-yes install
     if [ $? -eq 0 ]; then
         print_success "APT packages installed"
     else
@@ -189,7 +243,7 @@ if [[ "$unamestr" == 'Linux' ]]; then
     else
         print_error "Failed to clone Vim repository"
     fi
-    
+
     print_step "Configuring Vim as default editor..."
     sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 1
     sudo update-alternatives --set editor /usr/bin/vim
@@ -198,15 +252,15 @@ if [[ "$unamestr" == 'Linux' ]]; then
     print_success "Vim set as default editor"
 
     print_step "Configuring ZSH as default shell..."
-    TEMP_PAM=`mktemp`; echo "auth       sufficient   pam_wheel.so trust group=chsh" | cat - /etc/pam.d/chsh >  $TEMP_PAM && sudo mv $TEMP_PAM /etc/pam.d/chsh
+    TEMP_PAM=$(mktemp); echo "auth       sufficient   pam_wheel.so trust group=chsh" | cat - /etc/pam.d/chsh > "$TEMP_PAM" && sudo mv "$TEMP_PAM" /etc/pam.d/chsh
     sudo groupadd chsh
-    usermod -a -G chsh `whoami`
-    chsh -s `which zsh`
+    sudo usermod -a -G chsh "$(whoami)"
+    chsh -s "$(command -v zsh)"
     print_success "ZSH configured as default shell"
 
     print_step "Setting up Docker..."
     if sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D; then
-        echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >  /etc/apt/sources.list.d/docker.list
+        echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
         sudo apt-cache policy docker-engine
         sudo apt-get update
         print_info "Installing Docker engine..."
@@ -221,74 +275,150 @@ if [[ "$unamestr" == 'Linux' ]]; then
         print_error "Failed to add Docker repository key"
     fi
 
-
-
 elif [[ "$unamestr" == 'Darwin' ]]; then
     echo ""
     print_step "🍎 Detected macOS system - starting macOS-specific setup..."
-    
+
+    print_step "Checking for Xcode Command Line Tools..."
+    ensure_xcode_clt
+
     print_step "Checking for Homebrew..."
-    if ! brew -v 2>/dev/null; then
+    if load_homebrew_shellenv; then
+        print_success "Homebrew already installed ($(command -v brew))"
+    else
         print_info "Installing Homebrew..."
-        if /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"; then
-            print_success "Homebrew installed"
+        if NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+            if load_homebrew_shellenv; then
+                print_success "Homebrew installed ($(command -v brew))"
+            else
+                print_error "Homebrew installed but brew is not on PATH"
+            fi
         else
             print_error "Failed to install Homebrew"
         fi
-    else
-        print_success "Homebrew already installed"
     fi
-    
+
+    if command -v brew >/dev/null 2>&1; then
+        print_step "Installing Homebrew formulae..."
+        brew install \
+            cmake wget tree fzf forgit \
+            git gh vim \
+            rbenv ruby-build pyenv jenv nvm \
+            python@3 pipx virtualenvwrapper
+        if [ $? -eq 0 ]; then
+            print_success "Homebrew formulae installed"
+        else
+            print_error "Failed to install some Homebrew formulae"
+        fi
+
+        print_step "Installing Homebrew casks..."
+        brew install --cask iterm2 visual-studio-code
+        if [ $? -eq 0 ]; then
+            print_success "Homebrew casks installed"
+        else
+            print_warning "Failed to install some Homebrew casks (already installed outside brew?)"
+        fi
+    else
+        print_error "Skipping Homebrew packages because brew is unavailable"
+    fi
+
     print_step "Setting up Oh-My-Zsh..."
-    if [ ! -d "$HOME/.oh-my-zsh" ];
-    then
+    if [ -d "$HOME/.oh-my-zsh" ]; then
+        print_info "Oh-My-Zsh already installed"
+    else
         print_info "Installing Oh-My-Zsh..."
-        if wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh; then
+        # KEEP_ZSHRC so the installer leaves our symlinked .zshrc alone
+        if RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"; then
             print_success "Oh-My-Zsh installed"
         else
             print_error "Failed to install Oh-My-Zsh"
         fi
-    else
-        print_info "Oh-My-Zsh already installed"
     fi
-    
+
     print_step "Configuring ZSH as default shell..."
-    if sudo chsh -s `which zsh` `whoami`; then
-        print_success "ZSH configured"
+    ZSH_PATH="$(command -v zsh)"
+    if [ -z "$ZSH_PATH" ]; then
+        print_error "zsh not found, cannot set default shell"
+    elif [ "$SHELL" = "$ZSH_PATH" ]; then
+        print_success "zsh is already the default shell"
     else
-        print_error "Failed to configure ZSH as default shell"
-    fi
-    
-    print_step "Installing Homebrew packages..."
-    brew install cmake \
-        wget ruby-build \
-        vim tree \
-        rbenv fzf forgit pipx python@3
-    if [ $? -eq 0 ]; then
-        print_success "Homebrew packages installed"
-    else
-        print_error "Failed to install some Homebrew packages"
-    fi
-    
-    print_step "Checking for Xcode Command Line Tools..."
-    if ! xcode-select -v 2>/dev/null; then
-        print_info "Installing Xcode Command Line Tools..."
-        if sudo xcode-select --install; then
-            print_success "Xcode Command Line Tools installed"
+        grep -qxF "$ZSH_PATH" /etc/shells || echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
+        if chsh -s "$ZSH_PATH"; then
+            print_success "ZSH configured as default shell"
         else
-            print_warning "Xcode Command Line Tools installation may require manual intervention"
+            print_warning "Could not change the default shell, run: chsh -s $ZSH_PATH"
         fi
-    else
-        print_success "Xcode Command Line Tools already installed"
     fi
 fi
 
-print_step "Installing fzf key bindings and fuzzy completion..."
-yes | $(brew --prefix)/opt/fzf/install
+# ---------------------------------------------------------------------------
+# Dotfile symlinks
+# ---------------------------------------------------------------------------
+print_step "Setting up shell profiles..."
+link_file "$SCRIPTPATH/.zshrc" "$HOME/.zshrc"
+link_file "$SCRIPTPATH/.zshrc" "$HOME/.bash_profile"
+
+print_step "Setting up Vim configuration..."
+link_file "$SCRIPTPATH/.vimrc" "$HOME/.vimrc"
+
+print_step "Setting up Git configuration..."
+link_file "$SCRIPTPATH/gitfiles/.gitconfig" "$HOME/.gitconfig"
+# .gitconfig points core.excludesFile at ~/.gitignore
+link_file "$SCRIPTPATH/gitfiles/.gitignore" "$HOME/.gitignore"
+
+print_step "Setting up Claude Code skills..."
+link_file "$SCRIPTPATH/claude/skills" "$HOME/.claude/skills"
+
+if [[ "$unamestr" == 'Darwin' ]]; then
+    print_step "Setting up iTerm2 preferences..."
+    # iTerm2 reads its prefs out of a folder we point it at; symlinking into
+    # ~/Library/Preferences fights with cfprefsd and loses.
+    defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$SCRIPTPATH"
+    defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
+    if [ $? -eq 0 ]; then
+        print_success "iTerm2 pointed at $SCRIPTPATH for preferences"
+    else
+        print_error "Failed to configure iTerm2 preferences"
+    fi
+
+    print_step "Setting up Xcode key bindings..."
+    link_file "$SCRIPTPATH/Xcode" "$HOME/Library/Developer/Xcode/UserData/KeyBindings"
+
+    print_step "Setting up VSCode configuration..."
+    VSCODE_USER="$HOME/Library/Application Support/Code/User"
+    mkdir -p "$VSCODE_USER"
+    link_file "$SCRIPTPATH/VSCode/settings.json" "$VSCODE_USER/settings.json"
+    link_file "$SCRIPTPATH/VSCode/keybindings.json" "$VSCODE_USER/keybindings.json"
+fi
+
+# ---------------------------------------------------------------------------
+# Vim plugins
+# ---------------------------------------------------------------------------
+print_step "Installing Vim Pathogen..."
+mkdir -p ~/.vim/autoload ~/.vim/bundle
+curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 if [ $? -eq 0 ]; then
-    print_success "fzf key bindings installed"
+    print_success "Pathogen installed"
 else
-    print_error "Failed to install fzf key bindings"
+    print_error "Failed to install Pathogen"
+fi
+
+print_step "Installing Vim plugins..."
+cd ~/.vim/bundle || print_error "Could not enter ~/.vim/bundle"
+if [ ! -d "./vim-bundler" ]; then
+    print_info "Cloning vim-bundler..."
+    git clone https://github.com/tpope/vim-bundler.git
+    print_success "vim-bundler installed"
+else
+    print_info "vim-bundler already installed"
+fi
+
+if [ ! -d "./Vundle.vim" ]; then
+    print_info "Cloning Vundle.vim..."
+    git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+    print_success "Vundle.vim installed"
+else
+    print_info "Vundle.vim already installed"
 fi
 
 print_step "Installing Vim plugins with Vundle..."
@@ -301,7 +431,7 @@ fi
 
 print_step "Building YouCompleteMe..."
 if [ -d ~/.vim/bundle/YouCompleteMe ]; then
-    cd ~/.vim/bundle/YouCompleteMe
+    cd ~/.vim/bundle/YouCompleteMe || true
     ./install.py --clang-completer
     if [ $? -eq 0 ]; then
         print_success "YouCompleteMe built"
@@ -312,41 +442,48 @@ else
     print_warning "YouCompleteMe directory not found, skipping build"
 fi
 
+# ---------------------------------------------------------------------------
+# Tools
+# ---------------------------------------------------------------------------
+print_step "Installing fzf key bindings and fuzzy completion..."
+if command -v brew >/dev/null 2>&1 && [ -x "$(brew --prefix)/opt/fzf/install" ]; then
+    yes | "$(brew --prefix)/opt/fzf/install"
+    if [ $? -eq 0 ]; then
+        print_success "fzf key bindings installed"
+    else
+        print_error "Failed to install fzf key bindings"
+    fi
+else
+    print_info "fzf not installed via Homebrew, skipping key bindings"
+fi
+
 print_step "Installing vimpager..."
-VIMPAGER_DIR=`mktemp -d`
-cd "$VIMPAGER_DIR"
-if git clone https://github.com/rkitover/vimpager && cd vimpager && sudo make install; then
-    print_success "vimpager installed"
+if command -v vimpager >/dev/null 2>&1; then
+    print_info "vimpager already installed"
 else
-    print_error "Failed to install vimpager"
+    VIMPAGER_DIR=$(mktemp -d)
+    cd "$VIMPAGER_DIR" || true
+    if git clone https://github.com/rkitover/vimpager && cd vimpager && sudo make install; then
+        print_success "vimpager installed"
+    else
+        print_error "Failed to install vimpager"
+    fi
 fi
 
-print_step "Installing Python virtualenvwrapper..."
-sudo pip3 install virtualenvwrapper
-if [ $? -eq 0 ]; then
-    print_success "virtualenvwrapper installed"
+print_step "Installing Claude Code..."
+if command -v claude >/dev/null 2>&1; then
+    print_success "Claude Code already installed ($(command -v claude))"
 else
-    print_error "Failed to install virtualenvwrapper"
+    if curl -fsSL https://claude.ai/install.sh | bash; then
+        export PATH="$HOME/.local/bin:$PATH"
+        hash -r 2>/dev/null
+        print_success "Claude Code installed"
+    else
+        print_error "Failed to install Claude Code"
+    fi
 fi
 
-print_step "Setting up shell profiles..."
-mv ~/.bash_profile ~/.bash_profile.bak || true
-ln -s $SCRIPTPATH/.zshrc ~/.bash_profile
-print_info "bash_profile linked"
-
-print_step "Installing Cursor..."
-curl https://cursor.com/install -fsS | bash
-if [ $? -eq 0 ]; then
-    print_success "Cursor installed"
-else
-    print_error "Failed to install Cursor"
-fi
-
-mv ~/.zshrc ~/.zshrc.bak || true
-ln -s $SCRIPTPATH/.zshrc ~/.zshrc
-print_success "Shell profiles configured"
-
-cd -
+cd "$SCRIPTPATH" || true
 
 echo ""
 echo "════════════════════════════════════════════════════════════════"
