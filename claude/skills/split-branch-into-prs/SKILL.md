@@ -6,15 +6,16 @@ description: >-
   Unlike recompose-branch (which rewrites one branch's history in place), this
   leaves the original branch untouched and carves its cumulative diff into
   per-feature branches — independent off the base where changes are cleanly
-  separable, stacked where they share files. Use when the user asks to "split
-  this branch into PRs", "break the branch into smaller reviewable chunks", "one
-  PR per feature", "decompose / carve up this branch", or "turn this big branch
+  separable, stacked where they share files, with stacked chains registered as
+  native GitHub stacks via `gh stack`. Use when the user asks to "split this
+  branch into PRs", "break the branch into smaller reviewable chunks", "one PR
+  per feature", "decompose / carve up this branch", or "turn this big branch
   into stacked PRs".
 ---
 
 # Split a branch into per-feature branches and PRs
 
-Use this when a branch has grown into several distinct features and the user wants each shipped as its own small, reviewable PR. The output is N new branches (one per feature), each building on its own, each opened as a PR. The original branch is never modified.
+Use this when a branch has grown into several distinct features and the user wants each shipped as its own small, reviewable PR. The output is N new branches (one per feature), each building on its own, each opened as a PR, with any dependent chain registered as a **native GitHub stack**. The original branch is never modified.
 
 This borrows the base-resolution and read-only pre-flight discipline from `recompose-branch`, but it does **not** rewrite the source branch. It borrows nothing else from it; PR creation defers to `create-pr`.
 
@@ -24,7 +25,8 @@ This borrows the base-resolution and read-only pre-flight discipline from `recom
 - **The final tree is the source of truth.** Every output branch is carved from the source branch's *cumulative diff vs the base*, not from its commit history (the iteration order is noise, and cherry-picking interleaved commits conflicts).
 - **Each output branch must build on its own.** A PR that doesn't compile isn't reviewable. Verify every branch before committing it.
 - **The split must be faithful.** The union of the output branches must reproduce the source branch's tree exactly (modulo intentionally-dropped noise). Prove it with a diff at the end.
-- **Only `git add` / `git commit` / `git checkout -c` / `git checkout <ref> -- <path>` / `git push` write anything.** No `reset`, `rebase`, `merge`, `cherry-pick`, `revert`, or force-push. No `git add -A` / `git add .` (untracked cruft in the repo root must not leak into feature branches).
+- **Carve with git; stack with `gh stack`.** Branch construction is plain git (below). The chain relationship is then declared to GitHub natively, so reviewers get the stack UI and merging the bottom PR auto-rebases and retargets everything above it server-side.
+- **Only `git add` / `git commit` / `git checkout -c` / `git checkout <ref> -- <path>` / `git push` write anything** during carving. No `reset`, `rebase`, `merge`, `cherry-pick`, `revert`, or force-push. No `git add -A` / `git add .` (untracked cruft in the repo root must not leak into feature branches). `gh stack` commands that force-push (`rebase`, `sync`, `push`) are a **post-split** tool, not part of carving.
 
 ## Argument handling
 
@@ -37,6 +39,11 @@ Optional argument names the base ref. No argument → `origin/main`. A bare name
 3. `git status --porcelain` — working tree clean for tracked files. Untracked files are tolerated but **list them** and make sure none leak into feature branches (never `git add -A`).
 4. `git rev-parse --verify <base>` — base resolvable locally.
 5. `git rev-list --count <base>..HEAD ≥ 1` and `git diff --quiet <base>..HEAD` reports a difference — the branch is actually ahead with a non-empty diff.
+6. **Native stacking availability** (only matters if the topology turns out to be stacked; check it here so you know before promising anything):
+   - `gh --version` → **2.90.0 or later** is required by `gh stack`.
+   - `gh extension list | grep gh-stack` → if absent, `gh extension install github/gh-stack`. It is an official GitHub extension and free.
+   - The repo is on GitHub.com (stacks are a GitHub.com public-preview feature) and **all branches will live in the same repository** — cross-fork stacks are not supported, and neither is GitHub Desktop.
+   - If any of this fails, say so once and fall back to the degraded mode in Step 6: PRs chained by `--base` alone, no native stack.
 
 ## Step 1 — Analyze the diff and cluster it into features
 
@@ -51,12 +58,12 @@ Produce a feature list: for each feature, a short name, the single-feature files
 
 Present this clustering to the user before carving anything. If the split is non-obvious, this is worth an `AskUserQuestion` on how finely to split (e.g. keep one large cohesive feature whole vs. sub-split it).
 
-## Step 2 — Decide the topology (independent vs. stacked)
+## Step 2 — Decide the topology (independent vs stacked)
 
 Two shapes, usually mixed:
 
-- **Independent** — a feature whose files are all single-feature (or whose shared-file hunks don't depend on another feature) branches directly off the base and its PR targets the base. Cleanest; prefer it wherever the feature genuinely stands alone.
-- **Stacked** — features that co-edit the same files, or depend on each other's symbols, form a chain: `base → A → B → C`, each branch based on the previous, each PR targeting the branch below it.
+- **Independent** — a feature whose files are all single-feature (or whose shared-file hunks don't depend on another feature) branches directly off the base and its PR targets the base. Cleanest; prefer it wherever the feature genuinely stands alone. Independent branches stay **out** of the stack — putting them in would serialize their merge order for no reason.
+- **Stacked** — features that co-edit the same files, or depend on each other's symbols, form a chain: `base → A → B → C`, each branch based on the previous, each PR targeting the branch below it, and the whole chain registered as one GitHub stack. If the split yields two unrelated chains, that's two separate stacks, not one.
 
 The key insight that makes stacking cheap:
 
@@ -64,7 +71,7 @@ The key insight that makes stacking cheap:
 
 Dependencies also constrain order: a feature must sit above every feature it depends on. Thread a shared dependency (e.g. an identity/util module several features need) low in the stack so everything above inherits it.
 
-When entanglement is real, confirm the topology with `AskUserQuestion` — it determines each PR's base branch, which the user cares about. Offer: "stack them (cheapest, PRs chain)" vs. "maximum independence off the base (more hand-surgery stripping other features out)". Recommend stacking for heavily-shared files.
+When entanglement is real, confirm the topology with `AskUserQuestion` — it determines each PR's base branch and the stack shape, which the user cares about. Offer: "stack them (cheapest, PRs chain, merge bottom-up)" vs. "maximum independence off the base (more hand-surgery stripping other features out, PRs merge in any order)". Recommend stacking for heavily-shared files.
 
 ## Step 3 — Find the build/verify command
 
@@ -75,6 +82,8 @@ The skill is language-agnostic; discover how this project builds and tests befor
 - **Verify results explicitly.** Grep the build output for the real success/failure marker (e.g. `BUILD SUCCEEDED` / `BUILD FAILED`, a non-zero test summary). **Never trust the exit code of a piped command** (`xcodebuild ... | grep ...` returns grep's status, not the build's) — capture output to a file and check it, or check `${PIPESTATUS[0]}`.
 
 ## Step 4 — Carve each branch (build the stack base-up)
+
+Carve with plain git, bottom-up. Do **not** use `gh stack add` to create these branches: it wants to create a layer from the working tree at the moment you call it, whereas here each layer is assembled file-by-file out of `SOURCE` and must build before it exists as a commit. The branches get adopted into a stack in Step 6.
 
 For each feature, in dependency/stack order (independents off base; stacked ones off their parent branch):
 
@@ -93,17 +102,40 @@ For each feature, in dependency/stack order (independents off base; stacked ones
 
 Diff the **top of the stack** against the source branch: `git diff <top-branch> SOURCE --name-only`. The only files that may differ are those owned by the **independent** branches (which aren't in the stack) and any hunks you intentionally routed elsewhere (e.g. a telemetry file's other-feature hunk). Anything else differing means a branch is missing content — investigate before opening PRs. State the result explicitly: "branches A + B + <stack-top> reproduce the source exactly, modulo <known cosmetic delta>."
 
-## Step 6 — Push and open one PR per branch
+## Step 6 — Push, open one PR per branch, then declare the stack
 
-Push every branch first (`git push -u origin <branch>` for each) — stacked PRs need their base branch present on the remote before the PR can target it.
+**6a. Push every branch first** — `git push -u origin <branch>` for each. Stacked PRs need their base branch present on the remote before the PR can target it.
 
-Then open one PR per branch **following the `create-pr` skill's rules** for base-branch convention, title/description generation, the strict concise body format (lead sentence, optional bug/limitation bullets, `Changes` bullets, no formatting beyond backticks, no footers/trailers/emojis — see `create-pr`), and the `gh pr create` invocation with a HEREDOC body. Deviations from `create-pr` for this skill:
+**6b. Open one PR per branch**, following the `create-pr` skill's rules for base-branch convention, title/description generation, the strict concise body format (lead sentence, optional bug/limitation bullets, `Changes` bullets, no formatting beyond backticks, no footers/trailers/emojis — see `create-pr`), and the `gh pr create` invocation with a HEREDOC body. Deviations from `create-pr` for this skill:
 
-- **Base per branch:** independent branches target the base (e.g. `main`); each stacked branch targets **the branch below it**, not `main`. `gh pr create --base` takes the bare branch name.
+- **Base per branch:** independent branches target the base (e.g. `main`); each stacked branch targets **the branch below it**, not `main`. `gh pr create --base` takes the bare branch name. Set this correctly at creation time even though the stack will also enforce it — it keeps the diffs right if the stack call fails.
 - **Batch mode:** the user has already opted into "all PRs"; you may generate titles/bodies for all branches and open them without the per-PR interactive approval loop, unless the user asked to review each. Still honor `create-pr`'s body *format* and banned-words rules.
-- **State the merge order** in the summary: independents merge any time; the stack merges bottom-up, and each merge auto-retargets the next PR's base to the base branch.
+- **Cross-reference in the body:** for a stacked PR, the first `Changes` line may note the layer position (e.g. "Second of three stacked PRs; builds on `<parent-branch>`."). Keep it to one plain sentence — GitHub renders the stack itself.
 
-Return every PR URL.
+Create the PRs yourself rather than letting `gh stack submit` do it: `submit` opens PRs as **drafts** unless `--open`, and `--auto` fills in auto-generated titles, neither of which honors `create-pr`'s body rules.
+
+**6c. Register the native stack.** For each dependent chain (bottom → top), hand the already-open PRs to `gh stack link`:
+
+```sh
+gh stack link --base <base-branch> <bottom-pr-or-branch> <middle> <top>
+```
+
+Arguments may be branch names, PR numbers, or PR URLs, and are ordered **bottom-first**. `link` creates or updates the stack on GitHub and fixes each PR's base to the layer below it; it deliberately writes **no local tracking state**, which is exactly right here because the branches were carved by hand. `--open` marks the PRs ready for review (only needed if any were created as drafts); `--remote <name>` overrides the auto-detected remote.
+
+If the user wants local `gh stack` tracking too — so they can later run `gh stack view/sync/rebase/modify` from this checkout — adopt the existing branches instead of linking:
+
+```sh
+gh stack init --base <base-branch> <bottom-branch> <middle> <top>   # adopts existing branches, creates missing ones
+gh stack submit                                                     # pushes and links the already-open PRs into the stack
+```
+
+Either way, confirm with `gh stack view` (add `--json` to parse it) and report the stack as GitHub now sees it.
+
+**Degraded mode.** If `gh stack` is unavailable (gh < 2.90.0, extension won't install, not GitHub.com, stacks not enabled for the repo — exit code 9, cross-fork branches), the chained `--base` PRs from 6b still stand on their own. Say plainly that the native stack was not created and why; do not silently drop it.
+
+**6d. State the merge order.** Independents merge any time. A native stack merges **bottom-up**: merging the bottom PR makes GitHub rebase and retarget every PR above it server-side, so the next one becomes the new bottom automatically. Merging a mid-stack PR merges everything below it with it — atomically, all or nothing — and cannot be done in isolation. `gh stack merge [<stack-number|pr-number>]` merges one or several layers at once (`--squash` / `--merge` / `--rebase`, `-y` to skip confirmation). Auto-merge is not supported for stacks, and merging a stack through the API requires the asynchronous merge endpoint — the legacy synchronous merge endpoint will not do it. After merges land, `gh stack sync --prune` updates local state and deletes the merged branches.
+
+Return every PR URL, plus the stack number/URL if one was created.
 
 ## Anti-patterns
 
@@ -115,14 +147,21 @@ Return every PR URL.
 - Committing a branch before it builds. Every branch is independently reviewable → independently buildable.
 - Putting the small feature at the top of the stack and the big shared-file feature at the bottom — inverts the wholesale/partial work and maximizes hand-surgery.
 - Skipping the faithfulness diff. It's the only proof nothing was lost.
+- Leaving a hand-chained set of PRs unlinked when native stacks are available. Without the stack, merging the bottom PR leaves every PR above it pointing at a deleted branch and showing the wrong diff.
+- Opening the PRs with `gh stack submit --auto` — auto-generated titles and draft state ignore `create-pr`'s format. Create the PRs, then link them.
+- Dragging independent branches into the stack because they came from the same source branch. They gain nothing and lose the ability to merge in any order.
+- Running `gh stack rebase` / `sync` mid-carve. Those force-push; they belong after the split is proven and pushed.
 
 ## Quick checklist
 
 - [ ] Base resolved; source branch ahead with a non-empty diff; working tree clean (untracked noted)
+- [ ] `gh` ≥ 2.90.0 with `github/gh-stack` installed, GitHub.com, single repo (or degraded mode declared)
 - [ ] Diff clustered into features; single-feature vs shared files identified; shared-file hunks attributed; dependencies recorded
 - [ ] Topology chosen (independent vs stacked), largest-shared-file feature near the top, dependencies respected, confirmed with the user when entanglement is real
 - [ ] Build/verify command found; success checked explicitly (not via a piped exit code)
 - [ ] Each branch carved base-up: wholesale for single-feature + top-of-footprint files, partial for lower shared files, interface ripple handled, shared infra placed low, manifest surgery via a real tool
 - [ ] Each branch builds (and its tests compile when it touches them) before committing; one commit per feature; no `git add -A`
 - [ ] Faithfulness diff proves union == source
-- [ ] All branches pushed; one PR per branch per `create-pr` rules; stacked PRs based on their parent branch; merge order stated
+- [ ] All branches pushed; one PR per branch per `create-pr` rules; stacked PRs based on their parent branch
+- [ ] Chain registered with `gh stack link` (or `init` + `submit` when local tracking is wanted) and confirmed with `gh stack view`
+- [ ] Merge order stated: independents any time, stack bottom-up via `gh stack merge`, `gh stack sync --prune` after
