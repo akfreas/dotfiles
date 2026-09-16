@@ -109,6 +109,7 @@ export PATH="$HOME/.fastlane/bin:$PATH"
 LESS="-i -R";
 export LESS;
 
+export PATH="/opt/homebrew/bin:$PATH"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Source forgit plugin (requires fzf)
@@ -123,7 +124,6 @@ pyenv() { unset -f pyenv; eval "$(command pyenv init - zsh)"; pyenv "$@"; }
 
 PATH=$PATH:~/.composer/vendor/bin
 
-export PATH="/opt/homebrew/bin:$PATH"
 export NVM_DIR="$HOME/.nvm"
 # Lazy-load nvm on first use of nvm/node/npm/npx to keep shell startup fast
 _load_nvm() {
