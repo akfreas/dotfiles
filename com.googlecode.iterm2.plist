@@ -744,6 +744,8 @@
 			<real>1</real>
 		</dict>
 	</dict>
+	<key>EnableAPIServer</key>
+	<true/>
 	<key>EnableDivisionView</key>
 	<true/>
 	<key>EnableGrowl</key>
