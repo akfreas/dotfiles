@@ -1,51 +1,55 @@
 ---
 name: address-pr-comments
 description: >-
-  Pull Bugbot / reviewer comments on the current PR into a checklist — inline
-  review comments and main-conversation comments alike — then work them one at a
-  time: react 👀 when starting, judge each as real or false positive, cherry-pick
-  the proposed autofix or write modular commits, then drop the reaction and
-  resolve the thread only if it was actually addressed. Reports findings as a table.
+  Address reviewer / Bugbot comments on a PR one at a time: check the PR out
+  into its own git worktree, build a one-item-per-comment checklist from inline,
+  main-conversation and review-body comments, then hand each comment to a single
+  fresh subagent that investigates the claim, writes a short plan file into the
+  worktree, fixes it, runs every test suite the project has (unit, integration,
+  UI when relevant), makes modular commits and pushes if authorized. One
+  subagent at a time so the main thread stays small and every prompt is
+  reviewable. Main thread handles 👀 reactions, thread resolution and the
+  findings table.
 ---
 
 # Address PR Comments
 
-Use this skill when the user asks to look at PR comments — typically from Cursor Bugbot or a similar automated reviewer — and either dismiss them, cherry-pick proposed autofixes, or hand-write fixes. The skill is iterative: run it again every time a new Bugbot pass adds findings (each pass creates a new `cursor/<topic>-<hash>` branch on the remote).
+Use this skill when the user asks to address, fix, or triage the comments on a PR, whether they come from a human reviewer, Claude's own review, or an automated reviewer such as Cursor Bugbot. It is iterative: run it again whenever a new review lands.
 
-Every comment becomes a checklist item, and each item carries a visible lifecycle on GitHub: 👀 while you're working it, no reaction and a resolved thread once the fix is committed.
-
-## When to use
-
-- The user references PR comments, Bugbot findings, or a `cursor/*` autofix branch.
-- The user asks "are these real?" / "address the comments" / "look at the new findings".
-- You see a new Bugbot review since the last skill invocation in this conversation.
+The shape is fixed: **the PR lives in a worktree, every comment is one checklist item, and every item is worked by exactly one subagent at a time.** The main thread never edits code. It discovers comments, prepares the worktree and toolchain, writes each subagent's prompt (so the user can review what the agent was told), collects the report, and updates GitHub. This is not the `serial-subagents` skill; do not load it. There is no orchestrator checklist hand-off, no verifier agent, and no parallelism. Just one worker per comment, run to completion, then the next.
 
 ## Inputs
 
-The user may name a PR number, a cursor branch, or neither. Resolve in this order:
+Resolve the PR in this order:
 
 1. Explicit PR number → use it.
-2. Explicit cursor branch → look up the PR with `gh pr list --search "head:<branch>"` OR follow the autofix branch's `compare/<base>...<branch>` link in the review body.
-3. Neither → derive the PR for the current branch: `gh pr list --head "$(git rev-parse --abbrev-ref HEAD)" --json number --jq '.[0].number'`. If nothing, ask the user.
+2. Explicit branch → `gh pr list --search "head:<branch>" --json number --jq '.[0].number'`.
+3. Neither → `gh pr list --head "$(git rev-parse --abbrev-ref HEAD)" --json number --jq '.[0].number'`. If nothing, ask.
 
-Set these once and reuse them in every command below:
+Set once and reuse:
 
 ```
 REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 PR=<number>
+HEAD_BRANCH=$(gh pr view $PR --json headRefName --jq .headRefName)
 ```
+
+Also settle two policies up front, from the user's words, and write them into the checklist file so every subagent prompt states them:
+
+- **Push policy.** `push-per-comment` when the user said to push (for example "fix, test, then push") or has an ongoing iteration cycle on this PR; otherwise `commit-only`, and ask once at the end.
+- **Scope of comments.** All open threads by default. If the user names specific comments, only those.
 
 ## Procedure
 
-### 1. Fetch and discover
+### 1. Discover the comments (main thread)
 
 Run in parallel:
 
-- `git fetch origin` — pick up any new `cursor/*` branches the Bugbot pipeline pushed since last time.
-- `gh pr view $PR --json reviews,headRefName,baseRefName` — review summary including the latest Bugbot body and its autofix branch reference.
-- **Inline comments** — `gh api repos/$REPO/pulls/$PR/comments --paginate --jq '.[] | {id, path, line: .original_line, user: .user.login, created_at, body}'`. The bodies are large — strip everything before `<!-- DESCRIPTION END -->` and after `<!-- BUGBOT_BUG_ID` for a clean read.
-- **Main-conversation comments** — `gh api repos/$REPO/issues/$PR/comments --paginate --jq '.[] | {id, user: .user.login, created_at, body}'`. These are a *separate* endpoint from the inline ones and are easy to miss; a human reviewer's most important note is often here rather than on a line.
-- **Review threads** (needed for resolution, and to see what's already resolved):
+- `git fetch origin` (also picks up any `cursor/*` autofix branches).
+- `gh pr view $PR --json title,body,reviews,headRefName,baseRefName,headRefOid`.
+- Inline comments: `gh api repos/$REPO/pulls/$PR/comments --paginate --jq '.[] | select(.in_reply_to_id == null) | {id, path, line: (.line // .original_line), user: .user.login, created_at, body}'`. Replies (`in_reply_to_id != null`) belong to their parent item; read them for context, they are not items.
+- Main-conversation comments: `gh api repos/$REPO/issues/$PR/comments --paginate --jq '.[] | {id, user: .user.login, created_at, body}'`. This is a separate endpoint and is easy to miss; a human reviewer's headline objection often lives here.
+- Review threads (for resolution state and the `PRRT_…` ids):
 
 ```
 gh api graphql -f query='
@@ -53,231 +57,158 @@ query($owner:String!,$repo:String!,$pr:Int!){
   repository(owner:$owner,name:$repo){
     pullRequest(number:$pr){
       reviewThreads(first:100){
-        nodes{
-          id isResolved isOutdated path line
-          comments(first:20){ nodes{ databaseId author{login} body } }
-        }
+        nodes{ id isResolved isOutdated path line
+          comments(first:20){ nodes{ databaseId author{login} body } } }
       }
     }
   }
 }' -f owner=<owner> -f repo=<repo> -F pr=$PR
 ```
 
-The thread's `id` (a `PRRT_…` node id) is what resolves it; `comments.nodes[].databaseId` is what maps a thread back to an inline comment id.
+Skip threads where `isResolved` is true and comments already handled earlier in this conversation. For Bugbot bodies, strip everything before `<!-- DESCRIPTION END -->` and after `<!-- BUGBOT_BUG_ID`. If a review body names a `cursor/<topic>-<hash>` autofix branch, fetch it and note the head sha; it is passed to the relevant subagent as an option, not applied by the main thread.
 
-Identify which findings are **new since the last pass** by filtering on `created_at`, and skip threads where `isResolved` is already `true`. The conversation almost always has a prior timestamp to compare against — use it.
+### 2. Create the worktree and prepare the toolchain (main thread)
 
-### 2. Build the checklist
+Never work the PR in the user's current checkout. Put it in a sibling worktree:
 
-Before touching any code, turn the fetched comments into a checklist and show it to the user. **One item per comment**, drawn from all three sources:
+```
+MAIN=$(git rev-parse --show-toplevel)
+WT=$MAIN/../$(basename $MAIN)-pr-$PR
+git worktree add "$WT" "$HEAD_BRANCH"      # add -b only if the branch is not local yet
+git -C "$WT" pull --ff-only
+```
 
-- each inline review comment (`pulls/$PR/comments`),
-- each main-conversation comment (`issues/$PR/comments`),
-- any review body (`gh pr view --json reviews`) that raises actionable feedback not repeated in an inline comment.
+Then make the project runnable inside the worktree. Environments are untracked and do not come along, so:
 
-Record the checklist in the session todo list *and* in a durable scratch file (`pr-<PR>-comments.md` in the scratchpad directory) so a fresh context can pick it up. Each item holds:
+- Read the project's `CLAUDE.md`, `AGENTS.md`, `Makefile`, `package.json` (or equivalents) and write down the exact commands for: lint, format, unit tests, integration tests (including how their dependencies boot, for example `make dev-up`, and how to tell they are ready), and UI / frontend gates. These commands go verbatim into every subagent prompt; the subagent must not have to rediscover them.
+- Provide the environment: symlink the untracked env from the main checkout (`ln -s "$MAIN/.venv" "$WT/.venv"`, same for `node_modules`) or run the project's bootstrap. Then prove the worktree's own code is what runs: from `$WT`, `.venv/bin/python -c 'import <pkg>; print(<pkg>.__file__)'` must print a path under `$WT`. If it prints the main checkout (editable installs do this), every prompt must say to export `PYTHONPATH=$WT` for Python commands.
+- Confirm shared services the integration suite needs are up (for example `docker ps` for the dev database). If the project's own target refuses a stopped container, use the project's documented down/up targets and note the fix in the checklist file.
+
+Create `$WT/.pr-comments/` for the checklist, prompts and per-comment plans, and exclude it from git so a stray add cannot commit it: `echo '.pr-comments/' >> "$MAIN/.git/info/exclude"` (the exclude file is shared by all worktrees).
+
+### 3. Build the checklist (main thread)
+
+Write `$WT/.pr-comments/checklist.md` and show it to the user before any subagent starts. One item per comment, from all three sources. Fields:
 
 | field | meaning |
 |---|---|
+| `n` | sequential number in this pass |
 | `kind` | `inline`, `main`, or `review-body` |
-| `comment_id` | the REST id used for reactions |
-| `thread_id` | the `PRRT_…` node id — inline only |
-| `location` | `path:line`, or `—` for main comments |
-| `title` | short summary + severity |
-| `state` | `pending` → `in-progress` → `done` / `dismissed` |
+| `comment_id` | REST id (reactions, replies) |
+| `thread_id` | `PRRT_…` node id, inline only |
+| `location` | `path:line` or `—` |
+| `title` | short summary plus severity if the reviewer gave one |
+| `state` | `pending` → `in-progress` → `done` / `dismissed` / `blocked` |
+| `reaction_id` | the 👀 reaction id while in progress |
+| `commit` | sha(s) once landed |
 
-Filtering rules:
+Rules: one item per comment even when two comments describe the same bug (fix once, close both); bot self-corrections attach to the item they correct; order items so that ones touching the same files run consecutively, since a later subagent must start from the earlier one's commit. If one item's fix already closed another (the earlier report says so), verify that claim from the commit before marking the second one done without an agent.
 
-- Skip resolved threads and comments already handled in an earlier pass in this conversation.
-- Do **not** merge two comments into one item even when they describe the same underlying bug — each has its own reaction and its own thread. Fix once, then close both items.
-- Bot self-corrections ("Bugbot Autofix determined this is a false positive") attach to the item they correct; they are not their own item.
+### 4. Work each item with one subagent (main thread orchestrates, subagent executes)
 
-Work the checklist **strictly one item at a time**, start to finish, before opening the next. Do not batch the reactions.
+For each `pending` item, in order:
 
-### 3. Identify the autofix branch (if any)
-
-Bugbot review bodies contain a line like:
+1. Mark it `in-progress` and put 👀 on the comment. Store the reaction id in the checklist.
 
 ```
-compare/<base>...cursor/<topic>-<hash>?expand=1
+RID=$(gh api -X POST repos/$REPO/pulls/comments/<comment_id>/reactions -f content=eyes --jq .id)    # inline
+RID=$(gh api -X POST repos/$REPO/issues/comments/<comment_id>/reactions -f content=eyes --jq .id)   # main conversation
 ```
 
-That `cursor/...` is the autofix branch. Fetch it:
+2. Write the subagent prompt from the template in **Subagent prompt** below. Fill every placeholder; paste the comment body verbatim; include the reply chain if there is one. Save it to `$WT/.pr-comments/<n>-<slug>.prompt.md` so the user can review what the agent was given.
+
+3. Launch **one** `general-purpose` subagent with that prompt and wait for it. Do not launch the next item's agent until this one has returned. Do not read or edit the worktree yourself while it runs.
+
+4. Read the report. Then, in the main thread:
+   - Remove the 👀 on every outcome: `gh api -X DELETE repos/$REPO/pulls/comments/<comment_id>/reactions/$RID` (or the `issues/comments` form).
+   - **Fixed and verified** (a commit exists and every suite the agent was told to run reported exit 0): resolve the inline thread with `gh api graphql -f query='mutation($t:ID!){ resolveReviewThread(input:{threadId:$t}){ thread{ isResolved } } }' -f t=<thread_id>`. Main-conversation comments have no thread; their row in the table closes them.
+   - **False positive** or **blocked**: do not resolve. Reply on the thread with the agent's reasoning: `gh api repos/$REPO/pulls/$PR/comments -f body='…' -F in_reply_to=<comment_id>`.
+   - Record `state`, `commit` and a one-line outcome in the checklist. If the agent reported a suite it could not get green, the item is `blocked`; stop and surface it rather than starting the next item.
+
+5. Next item.
+
+### 5. Wrap up (main thread)
+
+- If the push policy was `commit-only`, ask once whether to push, then `git -C "$WT" push origin $HEAD_BRANCH`.
+- Emit the findings table (below).
+- Leave the worktree in place and print its path; remove it (`git worktree remove "$WT"`) only when the user says the PR is done.
+
+## Subagent prompt
+
+Every subagent gets a self-contained brief; it knows nothing about this conversation. The template is the contract. Keep the section headings so the user can diff prompts across items.
 
 ```
-git fetch origin cursor/<topic>-<hash>
-git log --oneline -5 origin/cursor/<topic>-<hash>
+You are fixing one review comment on GitHub PR #<PR> (<title>) in the worktree at <WT>, branch `<HEAD_BRANCH>`. Work only in that directory. Run `git -C <WT> status -sb` first; the tree must be clean and in sync with origin<, at or after commit <sha of the previous item> if applicable>. Read <WT>/AGENTS.md and <WT>/CLAUDE.md (if present) and follow them; <toolchain notes learned in step 2: venv path, PYTHONPATH requirement, package manager>.
+
+## The comment (verbatim)
+Author: <user>  Location: <path>:<line>  Thread: <thread_id or "main conversation">
+<comment body, verbatim, plus any replies in order>
+<if a Bugbot autofix branch exists: "An autofix commit exists at origin/<cursor branch> (<sha>). You may cherry-pick it if, after investigation, it is exactly the right fix; keep its author and body in that case. Otherwise write the fix yourself.">
+
+## Step 1: investigate before believing
+Open the cited code and trace the path the comment describes. Confirm or refute every factual claim in it against the actual code and, where possible, by running it (a small script, a failing test, a CLI invocation). Decide: REAL, REAL (pre-existing), or FALSE POSITIVE. A comment is not right because it is confident.
+
+## Step 2: write the plan file, however small
+Write <WT>/.pr-comments/<n>-<slug>.plan.md with these headings: Claim, Evidence (what you ran and saw, with file:line), Verdict, Plan (numbered steps), Tests to add or change, Suites to run. Write it before changing any code and update it if the plan changes. The file is deliberately untracked; never `git add` it.
+
+## Step 3: fix
+If FALSE POSITIVE, stop after the plan file and report. Otherwise implement the plan. Keep to the comment's scope; note neighbouring problems in the report instead of fixing them. Add or change tests so the exact failure the comment describes is covered, and prefer tests that exercise the real entry point (CLI, HTTP, subprocess) over tests that re-implement the code under test. <project-specific constraints, e.g. "Do not touch <file> beyond X; item <m> owns it.">
+
+## Step 4: run everything
+Run, in this order, and fix anything that fails (never skip, deselect, or ignore a failing test):
+- format and lint: <exact commands>
+- unit: <exact command>; this project <does / does not> print a pytest summary line, so check the exit code
+- integration: <exact command, plus how to boot its dependencies and how to tell they are ready>
+- UI / frontend gate: <exact command>; run only if your change touched <paths>, and say so explicitly in the report if you skipped it and why
+Return only after every applicable suite has run. Report exact exit codes.
+
+## Step 5: commit
+Commit with the git CLI as the machine's configured git user. One logical change per commit; split the fix from unrelated cleanup. Stage with explicit `git add <path>`, never `git add -A`. Message: one line, imperative mood, capitalized first word, no trailing period, no prefix, no body, no trailers, no Co-Authored-By, no "Generated with" line. Do not pass --author, --amend, or --no-verify. (Exception: a cherry-picked autofix keeps its original author and body.) Verify with `git log -n 3 --pretty=fuller`.
+
+## Step 6: push
+<"Push with `git push origin <HEAD_BRANCH>` (plain, no force) and confirm `git status -sb` shows the branch in sync." | "Do not push. Leave the commits on the branch.">
+
+## Report back
+Return, in this order: Verdict; commit hashes and subjects (or "no commit" for a false positive); files changed; the plan file path; every suite you ran with its exit code and anything you fixed to get it green; anything you deliberately left out or noticed but did not touch; and, if blocked, exactly what is blocking. Do not post anything to GitHub other than the push.
 ```
-
-The latest commit on that branch is the proposed autofix. Read it with `git show <sha>` and the per-file diff before judging.
-
-### 4. Open the item — react 👀
-
-The moment you start work on a checklist item (before reading the cited code), mark it `in-progress` and put the eyes on it. Capture the returned reaction id — you need it to remove the reaction later.
-
-Inline comment:
-
-```
-RID=$(gh api -X POST repos/$REPO/pulls/comments/<comment_id>/reactions -f content=eyes --jq .id)
-```
-
-Main-conversation comment:
-
-```
-RID=$(gh api -X POST repos/$REPO/issues/comments/<comment_id>/reactions -f content=eyes --jq .id)
-```
-
-Store `RID` alongside the item in the scratch file. Review-body items have no reaction target — note that and carry on.
-
-If a re-run finds a stale 👀 from an interrupted session, reuse its id (`gh api repos/$REPO/pulls/comments/<comment_id>/reactions --jq '.[] | select(.content=="eyes" and .user.login=="'"$(gh api user --jq .login)"'") | .id'`) rather than posting a second one.
-
-### 5. Verify the finding against the actual code
-
-**Do not trust descriptions blindly.** Bugbot occasionally mislabels things — sometimes it even self-acknowledges false positives in a follow-up comment on the same line. For each finding:
-
-1. Open the file at the cited line range.
-2. Verify the code matches the description's claim.
-3. Trace the runtime path the description describes. If it doesn't actually fire (e.g. the cited branch is unreachable, or the condition never occurs for this app's config), call it a false positive.
-4. Check for a self-correction comment from `cursor` on the same line — those start with "Bugbot Autofix determined this is a false positive" and explain why.
-
-Common false-positive patterns:
-- Index math on `Path.parents` — Bugbot has gotten this wrong before.
-- Bugs in "dead" branches that the surrounding code prevents from being reached.
-- Concerns about non-TTY behavior on a script that's only ever run interactively (still worth fixing if cheap, but not "high severity").
-
-### 6. Decide and fix
-
-For each finding pick one of:
-
-- **Cherry-pick** the autofix commit as-is — the diff is small, surgical, and matches the bug. Preserves `Cursor Agent` author.
-- **Cherry-pick and split** — autofix bundles unrelated fixes; split into modular commits afterward via `git reset --soft` + `git add -p`.
-- **Manual fix** — autofix is wrong, over-scoped, or breaks something. Write the fix yourself.
-- **Dismiss** — false positive. Note the reason in the table; do not commit anything.
-
-Aim for **one commit per comment**. That is what makes the reaction/resolution lifecycle line up with history: a reviewer can point at exactly the commit that answered their comment. Only depart from it when a single fix genuinely closes two comments, or when the autofix legitimately spans more than one logical change (then split it, per below).
-
-#### Commit style for skill-authored commits
-
-Any commit **this skill writes itself** — every **manual fix**, and each commit produced when **splitting** a cherry-pick — MUST follow the `modular-commits` skill's rules:
-
-- **No Claude attribution.** No `Co-Authored-By: Claude` trailers, no "Generated with Claude Code" footer, no `--author` override — the commit is attributed to the machine's configured git user.
-- **Single-line imperative subject.** Capitalized first word, no trailing period, no `feat:`/`fix:` prefix, **no body** — match the canonical examples in the `modular-commits` skill.
-- **Modular.** One logical change per commit; stage deliberately with `git add <path>` / `git add -p`, never `git add -A`.
-
-The **cherry-pick (as-is)** path is the one documented exception: it keeps the `Cursor Agent <cursoragent@cursor.com>` author **and** the original commit's bullet body (see §7). The no-body / machine-author rules apply only to commits this skill authors.
-
-### 7. Cherry-pick mechanics
-
-```
-git cherry-pick <sha>                  # clean apply
-git cherry-pick --no-commit <sha>      # if you anticipate splitting
-```
-
-When splitting (`--no-commit`, or `git reset --soft` after a clean apply), the resulting commits are **skill-authored** — re-stage with `git add -p` and write each one in the `modular-commits` style: single-line imperative subject, no body, no Claude attribution, machine git user. Do not carry the autofix's author or bullet body onto split commits.
-
-If it conflicts (very common when prior commits renumber things like preflight `[N/M]` labels):
-
-1. Resolve the conflict markers, preserving HEAD's structural choices (numbering, ordering) and folding in the autofix's behavioral changes.
-2. `git add <files>`.
-3. `git commit --author="Cursor Agent <cursoragent@cursor.com>" -m "$(git show <sha> --pretty=format:'%s%n%n%b' --no-patch)"` — preserves the original author and message body.
-
-**Do not** strip the bullet body from autofix commit messages when cherry-picking — they document the fix scope and are valuable history. This is the one exception to the `modular-commits` skill's "no body" rule.
-
-### 8. Verify the fix
-
-After every cherry-pick or manual fix, before closing the item:
-
-- Parse Python files: `python -c "import ast; ast.parse(open('<file>').read())"`.
-- Run the script's dry-run mode if it has one (e.g. `release.py --dry-run --skip-preflights`).
-- Run the dedicated venv smoke test that other scripts in the area use, if any.
-
-An item is **successfully addressed** only when a commit exists on the branch that changes the cited code *and* this verification passed. Anything less — a partial fix, a fix you couldn't verify, a change deferred to a follow-up — is not addressed.
-
-### 9. Close the item — drop 👀, then resolve
-
-Once the commit(s) for this comment are made:
-
-1. **Always remove the reaction**, whatever the outcome. A leftover 👀 reads as "still in progress" to everyone watching the PR.
-
-```
-gh api -X DELETE repos/$REPO/pulls/comments/<comment_id>/reactions/$RID     # inline
-gh api -X DELETE repos/$REPO/issues/comments/<comment_id>/reactions/$RID    # main conversation
-```
-
-2. **Resolve the thread if and only if the comment was successfully addressed** per §8:
-
-```
-gh api graphql -f query='
-mutation($t:ID!){ resolveReviewThread(input:{threadId:$t}){ thread{ isResolved } } }' -f t=<thread_id>
-```
-
-Do **not** resolve when the verdict was `FALSE POSITIVE`, when the fix is partial or deferred, or when you're unsure. Reply to the thread with the reasoning instead (`gh api repos/$REPO/pulls/$PR/comments -f body='…' -F in_reply_to=<comment_id>`) and leave it open for the human to close.
-
-**Resolution applies to inline review threads only** — those are the ones carrying a *Resolve conversation* button. Main-conversation comments have no thread behind them and are closed out by the reaction removal plus their row in the report; say so explicitly rather than leaving the user to wonder why they weren't resolved. (GitHub's *Hide comment → Resolved* — `minimizeComment` with the `RESOLVED` classifier — does work on them, but it collapses the comment out of view, so don't reach for it unless the user asks.)
-
-3. Mark the checklist item `done` / `dismissed` in the scratch file and the todo list, then open the next item at §4.
-
-### 10. Push (only when the user asks, or when this is part of an ongoing PR-iteration cycle)
-
-`git push origin <branch>`. Don't push without confirmation if the user hasn't established that this is an ongoing review-iteration cycle on the current PR.
-
-Note that resolving threads and reacting are **outward-facing writes on the PR** — they're part of this skill's normal operation once the user has asked you to address comments, but don't run them speculatively on a PR the user only asked you to read.
 
 ## Output format
 
-Always emit a table with these exact columns:
+Always emit this table, even for one item:
 
 ```
-| # | Source | Finding | Verdict | Thread | Why |
-|---|---|---|---|---|---|
+| # | Source | Finding | Verdict | Thread | Commit | Why |
+|---|---|---|---|---|---|---|
 ```
 
-- **#** — sequential number (`1`, `2`, …) within this pass. Do not reuse numbers across passes; if a new pass has 2 findings, they're `A` / `B` (or `1` / `2` with a header noting "new findings").
-- **Source** — `inline path:line`, `main`, or `review body`.
-- **Finding** — short title + severity in parens. Match what Bugbot used (e.g. `HIGH`, `MED`).
-- **Verdict** — one of: `**REAL**`, `**REAL (pre-existing)**`, `**FALSE POSITIVE**`. Bold the verdict.
-- **Thread** — `resolved` or `left open` for inline threads; `n/a` for main comments and review bodies, which have no thread to resolve.
-- **Why** — one or two sentences. Cite specific file:line where useful. If false positive, say what was wrong with the analysis.
+- **Source**: `inline path:line`, `main`, or `review body`.
+- **Finding**: short title plus severity if the reviewer gave one.
+- **Verdict**: `**REAL**`, `**REAL (pre-existing)**`, `**FALSE POSITIVE**`, or `**BLOCKED**`.
+- **Thread**: `resolved`, `left open`, or `n/a` (main comments and review bodies).
+- **Commit**: short sha(s), or `—`.
+- **Why**: one or two sentences with file:line where useful; for a false positive, what was wrong with the claim.
 
-After the table, list the resolution action(s) taken (cherry-pick SHA, manual commit SHA, or "dismissed"). Then a one-line summary of post-change verification (parse + dry-run + whatever else), and confirm that every 👀 reaction has been cleared.
-
-### Example
-
-```
-| # | Source | Finding | Verdict | Thread | Why |
-|---|---|---|---|---|---|
-| 1 | inline `localize.py:55` | Localizer targets wrong store version (HIGH) | **REAL** | resolved | `localize.py:55-79` filters versions to live/in-review; release picks PREPARE_FOR_SUBMISSION → metadata lands on the live version. |
-| 2 | inline `release.py:12` | REPO_ROOT one directory too high (MED) | **FALSE POSITIVE** | left open | Bugbot self-acknowledged. `SCRIPT_DIR.parents[3]` IS the repo root (verified via filesystem). |
-| 3 | main | Please gate the push behind a confirmation | **REAL** | n/a | Added the prompt in `release.py:210`. Main-conversation comment — no thread to resolve. |
-
-Cherry-picked `a198f39e` from `cursor/encameracore-release-issues-05f0` for #1; `7c1d044` hand-written for #3. Verified: both files parse, `--dry-run --skip-preflights` shows the same plan as before. All 👀 reactions cleared.
-```
+After the table: the suites that ran per item with exit codes, the worktree path, whether the branch was pushed, and confirmation that every 👀 was cleared.
 
 ## Anti-patterns
 
-- **Don't skip the main-conversation comments.** `pulls/$PR/comments` returns only inline ones; a reviewer's headline objection often lives in `issues/$PR/comments` and gets silently dropped.
-- **Don't batch the reactions.** 👀 goes on when you open one item and comes off when its commit lands — reacting to everything up front tells the reviewer nothing.
-- **Don't leave a stale 👀.** Remove it on every path, including dismissals and items you hand back to the user.
-- **Don't resolve a thread you didn't actually fix.** Resolution is a claim that the code changed and was verified; false positives get a reply and stay open for a human.
-- **Don't trust descriptions without reading the code.** Bugbot has been wrong; verify every "real" claim against the actual cited lines before committing a fix.
-- **Don't push without asking** unless the user has clearly established an ongoing iteration cycle on the PR (multiple back-and-forth pushes already in this conversation).
-- **Don't strip the autofix commit's body** when cherry-picking — preserve the bullet list so future readers understand what the commit fixed.
-- **Don't rewrite the author** of a cherry-picked autofix. Keep `Cursor Agent <cursoragent@cursor.com>` as the author; you'll appear as the committer automatically.
-- **Don't skip the table.** Even for one finding, render the table. Consistency matters because the user will compare across passes.
-- **Don't squash multiple Bugbot passes into one commit.** Each pass is its own cherry-pick (or set of commits), so the PR history shows which findings were addressed when.
+- Working in the user's checkout instead of the worktree, or running the worktree's tests against the main checkout's package because the editable install was not checked.
+- Launching more than one subagent at once, or starting the next item before the current agent has returned. Later items depend on earlier commits.
+- Fixing anything in the main thread. If the agent comes back blocked, surface it; do not finish it yourself.
+- Prompts that say "run the tests" without the exact commands. Discover them once in step 2 and paste them.
+- Trusting the comment without the investigation step, or trusting the subagent's "tests pass" without exit codes in its report.
+- Batching 👀 reactions, leaving a stale 👀, or resolving a thread whose fix was partial, unverified, or a false positive.
+- Skipping `issues/$PR/comments`; the main-conversation comments are a separate endpoint.
+- Committing `.pr-comments/`, pushing when the policy was `commit-only`, force-pushing, or adding Claude attribution to commits.
 
 ## Quick checklist
 
-- [ ] Fetched `origin` and the `cursor/<...>` branch named in the latest review
-- [ ] Pulled inline comments, main-conversation comments, and review threads (GraphQL) — filtered to those new since the last pass and not already resolved
-- [ ] Built a one-item-per-comment checklist in the todo list and a durable scratch file, and showed it to the user
-- [ ] Worked items one at a time: 👀 on open, verify, fix, verify, 👀 off, resolve
-- [ ] Verified each finding against the actual cited code (false positives identified)
-- [ ] Cherry-picked or hand-fixed per the per-finding decision, one commit per comment where possible
-- [ ] Preserved `Cursor Agent` authorship on cherry-picks (with the bullet body intact)
-- [ ] Skill-authored commits (manual fixes + splits) follow `modular-commits`: single-line imperative, no body, no Claude attribution, machine git user
-- [ ] Parsed / dry-ran the affected scripts post-change
-- [ ] Resolved only the threads that were actually addressed; replied on the rest
-- [ ] No 👀 reactions left behind
-- [ ] Reported findings as a Markdown table with the six columns above
-- [ ] Confirmed with the user before pushing (unless already in an iteration cycle)
+- [ ] PR resolved; push policy and comment scope settled with the user
+- [ ] Inline, main-conversation, and review-body comments fetched; resolved threads skipped
+- [ ] Worktree created at `<repo>-pr-<PR>`, env provided, package import verified to come from the worktree, services for integration tests up
+- [ ] Exact lint / unit / integration / UI commands written down once and pasted into every prompt
+- [ ] Checklist file written and shown to the user; `.pr-comments/` excluded from git
+- [ ] Per item: 👀 on, prompt saved to `.pr-comments/`, one subagent launched and awaited, 👀 off, resolve or reply, checklist updated
+- [ ] Every subagent wrote its plan file before editing and reported exit codes for every suite
+- [ ] Commits follow the single-line imperative style with no attribution trailers
+- [ ] Table emitted; worktree path reported; pushed only per the agreed policy
