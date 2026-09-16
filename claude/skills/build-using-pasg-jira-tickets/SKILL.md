@@ -4,7 +4,7 @@ description: >-
   Implement a PASG Jira ticket end-to-end, working step by step from the ticket itself
   as the single source of truth — read it over Jira's REST API from the authenticated
   Chrome tab, build exactly its
-  acceptance criteria, commit per unit of work with the ticket ID in the second -m flag,
+  acceptance criteria, commit per unit of work with the ticket ID,
   post a completion comment, and move the status. Use when the user invokes
   /build-using-pasg-jira-tickets, says "build PASGAI-XXX", pastes a
   paloaltostrategygroup.atlassian.net/browse/ URL, or asks to implement, work on, or
@@ -78,7 +78,7 @@ Walk the ticket's subtasks (or its acceptance criteria when there are no subtask
 - Get it green locally — tests and lint — before starting the next one.
 - Commit it with `/modular-commits`, putting the ticket ID in the second `-m` flag so it stays out of the user-visible subject but remains traceable:
   ```bash
-  git commit -m "Add strict PASG mermaid dialect parser with grid-position metadata" -m "PASGAI-177"
+  git commit -m "PASGAI-177: Add strict PASG mermaid dialect parser with grid-position metadata"
   ```
 
 Do not batch several units into one commit, and do not run ahead to a later unit because it's convenient. The commit sequence should read as the ticket's own order.
