@@ -25,6 +25,7 @@ The orchestrator's context is a **ledger, not a workspace**. It holds the checkl
 2. **The plan lives on disk, not in your context.** Before delegating anything, the checklist exists as a durable artifact — a plan file, a ticket, a scratchpad markdown. If the session died right now, a fresh context must be able to pick up from that artifact alone. If you find yourself writing a long plan *into* a subagent prompt, that plan belongs in the durable record first; point the subagent at it.
 3. **You own state; subagents own work.** Ticket states, checklist updates, cross-task decisions, branch/PR management, and anything the user must be told belong to the orchestrator. Subagents implement, test, and commit their own scope — nothing else.
 4. **Blockers stop the chain.** A subagent that hits a wall reports and stops rather than improvising. When it does, you stop too — surface it to the user instead of launching the next unit on top of a broken foundation.
+5. **All commits go through `/modular-commits`.** Every subagent MUST use the `modular-commits` skill for committing. No exceptions — not `git commit`, not a one-liner shortcut, not "it's just one file". The subagent prompt MUST explicitly instruct: "Commit exclusively via `/modular-commits` — never run `git commit` directly." If a subagent's report shows commits that were not made through the skill, treat it as a failed unit and redo it.
 
 ## Procedure
 
@@ -50,7 +51,7 @@ Each prompt is written from scratch for its unit. Not a template fill, not "cont
 - **Carry-forward from the previous unit.** "PASGAI-190 is already committed as 2814427; `services/sharepoint_graph.py` now exposes `GraphSearchHit` and `search_hits(...)` — read it for exact signatures." This is the single highest-value paragraph in the prompt.
 - **Operational traps.** The commands that actually work, the ones that look right and aren't, the known-failing baseline it should not try to fix, environment quirks. It cannot discover these cheaply and will waste half its context finding them.
 - **Scope fence and non-goals.** What is deliberately out of scope, and what belongs to a later unit.
-- **Definition of done.** Tests to run and the expected result, lint, `/modular-commits` (commit only its own files, tests green *before* committing), do not push.
+- **Definition of done.** Tests to run and the expected result, lint, and — **mandatory** — commit exclusively via `/modular-commits` (invoke the skill, do not run `git commit` directly; commit only its own files; tests green *before* committing), do not push.
 - **Blocker protocol.** If the prescribed approach doesn't work, stop and report — do not improvise, especially anything that changes persisted data, deletes tests, or weakens an assertion. Out-of-scope bugs get reported, not fixed inline.
 - **The final-report contract.** Its last message is all that survives. Specify the shape: files changed; commit hashes and subjects; the exact test result line; lint result; one line per acceptance criterion naming the test that proves it; the public API/handoff surface the next unit will consume; deviations and open concerns.
 
