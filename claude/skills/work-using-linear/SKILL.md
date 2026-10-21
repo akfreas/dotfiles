@@ -5,7 +5,8 @@ description: >-
   execution order from the project description, work tickets and sub-issues
   strictly sequentially while respecting blocked-by relations, keep every
   issue's state accurate in Linear as the single source of truth, commit per
-  sub-issue via /modular-commits with the ticket ID in the commit body, post a
+  sub-issue via /modular-commits with the ticket ID in the commit body, comment
+  the session ID, session link and hostname on each code-complete issue, post a
   brief project update with a session link after each chunk, and on any
   blocker or ambiguity comment on the issue, tag Alex Freas, and STOP. Invoke
   when the user provides a Linear project or ticket ID/URL and asks to work
@@ -47,7 +48,27 @@ For each sub-issue, in order:
 3. Implement exactly the ticket's scope. Respect explicit non-goals ("no stamping in this sub-issue", "no call sites changed yet"). Small mechanical deviations are fine; anything that changes the ticket's design is a blocker.
 4. Run the ticket's test plan and fix failures. Persisted-format work gets golden vectors computed independently (e.g. a Python reference implementation) rather than generated from the code under test.
 5. Commit via the `/modular-commits` skill, with one override to its defaults: put the ticket ID (e.g. `ENC-38`) in the commit's **extended description** (body, via a second `-m`), never in the subject line.
-6. Mark the sub-issue Done.
+6. Post a provenance comment on the sub-issue (see below).
+7. Mark the sub-issue Done.
+
+A ticket worked without sub-issues follows the same steps, provenance comment included.
+
+#### Provenance comment
+
+Once an issue is code complete (implemented, tested, committed), comment on it with `mcp__linear-server__save_comment` recording where the work happened, so the session can be found and inspected later:
+
+- **Session ID:** the value of `$CLAUDE_CODE_SESSION_ID`.
+- **Session link:** the `https://claude.ai/code/session_…` URL from the harness environment, if one is available. If there isn't one, omit the line rather than inventing a URL.
+- **Host:** the output of `hostname`. Transcripts only exist on the machine the session ran on, so this tells you which computer to look on.
+
+Get the values in one command: `echo "$CLAUDE_CODE_SESSION_ID"; hostname`. Keep the comment to just these lines under a short heading such as `Code complete — provenance`, with real newlines in the body:
+
+```
+Code complete — provenance
+Session: 554ca5f0-ab7d-4f1a-b461-f5d599aec4b8
+Link: https://claude.ai/code/session_…
+Host: Alex-F-MacBook-Pro.local
+```
 
 ### 4. Close each chunk
 
@@ -76,6 +97,7 @@ When every issue is Done: run the full suite once more, post a final short proje
 - Working two tickets "while I'm in the file anyway".
 - Batch-updating Linear states after the code is done.
 - Marking a parent Done while a sub-issue is open, or vice versa.
+- Marking an issue Done without its provenance comment.
 - Long, narrative project updates that duplicate ticket descriptions.
 - Silently deviating from a ticket's design because the described approach didn't work — that's a blocker, not a judgment call.
 - Continuing past a blocker on other tickets "to stay productive": downstream tickets usually depend on the blocked decision.
