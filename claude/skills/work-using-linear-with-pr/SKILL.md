@@ -21,12 +21,12 @@ A Linear ticket (ID like `ENC-32` or an issue URL) or a Linear project (name or 
 
 ## Overrides to work-using-linear
 
-1. **Work in a new branch inside a new git worktree** — this replaces work-using-linear §2 "Set up git". Never work in the main checkout.
+1. **Work in a new branch inside a new git worktree** — this replaces work-using-linear §3 "Set up git". Never work in the main checkout.
 2. **A PR is opened at the end** — this replaces work-using-linear's "never push or open a PR unless the user asks". Invoking this skill is that ask.
 
 ## 1. Create the branch and worktree
 
-Resolve the ticket or project in Linear first (work-using-linear §1), then derive a slug that contains the ticket or project name:
+Resolve the ticket or project in Linear (work-using-linear §1) and run its read-only preflight (work-using-linear §2) before creating anything. If the preflight stops to ask the user, wait for their answer. Then derive a slug that contains the ticket or project name:
 
 - **Ticket:** use the issue's `gitBranchName` from Linear (it already contains the ticket ID and title, e.g. `enc-32-key-picker`). If it is missing, build `<ticket-id>-<short-title>` in lowercase kebab case, e.g. `enc-32-key-picker`.
 - **Project:** the project name in lowercase kebab case, e.g. `secure-sharing-v2`.
@@ -56,7 +56,7 @@ Merge rather than rebase, so a branch that was already pushed never needs a forc
 
 ## 2. Work step by step
 
-Follow work-using-linear §3–§5 exactly: one ticket and one sub-issue at a time, Linear states updated in real time, tests gating each step, and the blocker protocol on any ambiguity.
+Follow work-using-linear §4–§6 exactly: one ticket and one sub-issue at a time, Linear states updated in real time, tests gating each step, and the blocker protocol on any ambiguity.
 
 **Commit at every boundary via `/modular-commits`.** A boundary is each completed sub-issue, and each completed ticket that has no sub-issues. Never run `git commit` directly, and never let uncommitted work for a finished step carry into the next one. Keep work-using-linear's override: the ticket ID goes in the commit body, never the subject line.
 
@@ -64,12 +64,12 @@ If the blocker protocol fires, STOP as work-using-linear says — **do not open 
 
 ## 3. Open the PR
 
-When every ticket in scope is Done and the final test run is green (work-using-linear §6):
+When every ticket in scope is Done and the final test run is green (work-using-linear §7):
 
 1. Confirm the worktree is clean (`git status`) — everything is committed.
-2. Pull `main` again: `git fetch origin && git merge origin/main`. If there are conflicts, resolve each one by reading both sides and keeping the intent of both `main`'s change and the ticket's change. If a conflict can't be resolved without guessing at that intent, treat it as a blocker (work-using-linear §5) and do not open the PR. After resolving, run the full test suite again and fix any failures. Then commit the merge with `git commit --no-edit`: this is the one commit that doesn't go through `/modular-commits`, because it records a merge rather than authored work. Fixes needed after the merge do go through `/modular-commits`.
+2. Pull `main` again: `git fetch origin && git merge origin/main`. If there are conflicts, resolve each one by reading both sides and keeping the intent of both `main`'s change and the ticket's change. If a conflict can't be resolved without guessing at that intent, treat it as a blocker (work-using-linear §6) and do not open the PR. After resolving, run the full test suite again and fix any failures. Then commit the merge with `git commit --no-edit`: this is the one commit that doesn't go through `/modular-commits`, because it records a merge rather than authored work. Fixes needed after the merge do go through `/modular-commits`.
 3. From inside the worktree, invoke the `create-pr` skill. It pushes the branch and opens the PR with its own defaults; pass along any base branch, title, or draft preference the user gave.
-4. Post the final Linear project update (work-using-linear §6) and include the PR URL in it. For a single ticket, also add a comment with the PR URL on the ticket.
+4. Post the final Linear project update (work-using-linear §7) and include the PR URL in it. For a single ticket, also add a comment with the PR URL on the ticket.
 
 ## 4. Report
 
