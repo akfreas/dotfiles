@@ -2,7 +2,8 @@
 name: work-using-linear
 description: >-
   Execute a Linear project or ticket end-to-end the "Linear way": derive
-  execution order from the project description, run a read-only preflight
+  execution order from the project description, read every issue's comments
+  alongside its description as part of the spec, run a read-only preflight
   that checks whether each ticket is already done, has drifted from the code,
   or duplicates other tickets (comment and ask before proceeding if so), work tickets and sub-issues
   strictly sequentially while respecting blocked-by relations, keep every
@@ -33,15 +34,16 @@ Execute a Linear project (or a single ticket and its sub-issues) with Linear as 
 
 - Resolve the input: a project URL/name → `mcp__linear-server__get_project`; an issue ID (e.g. `ENC-32`) → `mcp__linear-server__get_issue`, then fetch its project and siblings if it has any.
 - Read the **project description first** — it usually contains a "Sequence of work" or equivalent narrative plus links to a plan document. That narrative is the primary ordering signal. If it references a plan doc in the repo, read it (check other branches with `git log --all` if it isn't on the current branch).
-- List all project issues (`mcp__linear-server__list_issues` with the project) and fetch **full descriptions** with `get_issue` — list output truncates them. Map the structure: parent issues (chunks), their sub-issues (executable pieces), and blocked-by relations, which also appear as "Blocked by …" in the first line of sub-issue descriptions. Skip issues in Canceled state.
+- List all project issues (`mcp__linear-server__list_issues` with the project) and fetch **full descriptions** with `get_issue` — list output truncates them. Then fetch **every issue's comments** with `mcp__linear-server__list_comments` (and the project's comments when working a project); `get_issue` does not include them. Map the structure: parent issues (chunks), their sub-issues (executable pieces), and blocked-by relations, which also appear as "Blocked by …" in the first line of sub-issue descriptions. Skip issues in Canceled state.
 - Derive the execution order: project narrative order for chunks; within a chunk, dependency order for sub-issues; a chunk that is "parallel-safe" per the description is still executed sequentially, in narrative order.
 - Tickets follow a template (Steps / Acceptance criteria / Automated test plan). Treat those sections as the spec: exact file paths, function signatures, named test functions, and the command to run them.
+- Comments are part of the spec too. They often carry decisions, scope changes, clarifications, reproduction details, or answers to earlier blocker questions that never made it back into the description. Read them oldest to newest; where a later comment clearly amends the description, follow the comment. Where a comment and the description conflict and it's unclear which one wins, that is a blocker (§6).
 
 ### 2. Preflight: is this ticket still worth doing?
 
 Before any work begins, investigate every ticket in scope against the current codebase and Linear. This step is **read-only**: no file edits, no branches, no commits, no Linear state changes. The only write allowed is the preflight comment described below. Run `git fetch origin` first so the investigation sees the latest `origin/main`.
 
-Check three things:
+Check three things, using both the description and the comments as the ticket's content — a comment saying "fixed in #123", "superseded by ENC-50", or "no longer needed" counts as evidence just like the code does:
 
 1. **Already done or partially done.** Search for earlier work: `git log --all --grep=<ticket ID>`, `git log --all -S <key symbol>` for the functions or types the ticket introduces, and `gh pr list --state all --search <ticket ID>`. Then read the code the ticket targets and check each acceptance criterion against `origin/main`: is it already met, partly met, or not met?
 2. **Drift between the ticket and the code.** Verify every file path, symbol, `path:line` anchor, and API the ticket names still exists and behaves as described. For a bug, check whether the described condition can still happen in the current code. Note where the ticket's implementation plan no longer fits how the code is structured now.
@@ -67,7 +69,7 @@ Minor drift (a moved line, a renamed helper) is not a stop condition: note it in
 For each sub-issue, in order:
 
 1. Mark it In Progress (`mcp__linear-server__save_issue` with `state: In Progress`). Also mark the parent In Progress when its first sub-issue starts.
-2. Read the referenced code before writing any — verify that cited `path:line` anchors still hold, and follow the existing patterns they point to. If the ticket's assumptions don't match reality (missing API, moved file, wrong line semantics), that is a blocker — see rule 4.
+2. Re-fetch the sub-issue's comments with `mcp__linear-server__list_comments` in case anything was added since orientation, then read the referenced code before writing any — verify that cited `path:line` anchors still hold, and follow the existing patterns they point to. If the ticket's assumptions don't match reality (missing API, moved file, wrong line semantics), that is a blocker — see rule 4.
 3. Implement exactly the ticket's scope. Respect explicit non-goals ("no stamping in this sub-issue", "no call sites changed yet"). Small mechanical deviations are fine; anything that changes the ticket's design is a blocker.
 4. Run the ticket's test plan and fix failures. Persisted-format work gets golden vectors computed independently (e.g. a Python reference implementation) rather than generated from the code under test.
 5. Commit via the `/modular-commits` skill, with one override to its defaults: put the ticket ID (e.g. `ENC-38`) in the commit's **extended description** (body, via a second `-m`), never in the subject line.
@@ -118,6 +120,7 @@ When every issue is Done: run the full suite once more, post a final short proje
 ## Anti-patterns
 
 - Starting work before the preflight, or editing anything during it.
+- Working from the description alone without reading the issue's comments.
 - A preflight comment longer than one paragraph, or padded with explanation.
 - Implementing a ticket that is already done or obsolete without asking.
 - Working two tickets "while I'm in the file anyway".
