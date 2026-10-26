@@ -55,11 +55,9 @@ Run:
 
 Interpret:
 
-- `ahead == 0` → branch has no new commits. Stop and tell the user.
-- `behind > 0` → `origin/<base>` has commits the branch doesn't. **STOP.** Do not open the PR. Report the count and the list (`git log --oneline HEAD..origin/<base>`) so the user can rebase or merge themselves. Do not pull, merge, or rebase on their behalf. Do not offer to.
+- `ahead == 0` → branch has no new commits. Stop and tell the user. This is the only hard blocker in this step.
+- `behind > 0` → `origin/<base>` has commits the branch doesn't. **Proceed anyway** and open the PR even though the branch is behind. Do not pull, merge, or rebase on their behalf, and do not ask. Remember the `behind` count for the report in step 8. The later steps use `origin/<base>..HEAD` and the three-dot `origin/<base>...HEAD` diff, so the commits and diff stat still cover only this branch's work.
 - `behind == 0 && ahead > 0` → proceed.
-
-These are hard blockers, not preference questions — stopping here is correct even in auto mode.
 
 ### 3. Gather commit context
 
@@ -208,12 +206,12 @@ When the user asks to update an existing PR's description instead of opening one
 
 ### 8. Report
 
-Return the PR URL `gh` prints, plus the base branch and the title you used, so the user can see what was opened and fix it if a generated value missed. Add one line on the provenance block: how many sessions and worktrees it lists, and whether any session was driven through Remote Control or any worktree has since been removed. Editing an already-open PR is cheap; blocking on a prompt every time is not.
+Return the PR URL `gh` prints, plus the base branch and the title you used, so the user can see what was opened and fix it if a generated value missed. Add one line on the provenance block: how many sessions and worktrees it lists, and whether any session was driven through Remote Control or any worktree has since been removed. If the branch was behind `origin/<base>` in step 2, add one line saying how many commits behind it is, so the user can rebase or merge later if they want to. Editing an already-open PR is cheap; blocking on a prompt every time is not.
 
 ## Notes
 
 - Never push to `main`/`master`. If the current branch is the base branch, stop and tell the user.
 - Do not skip hooks, do not force-push.
-- Do not pull, merge, or rebase to resolve divergence in step 2 — that's the user's call.
+- Being behind the base branch never blocks the PR. Do not pull, merge, or rebase to resolve it — that's the user's call.
 - If `gh pr create` fails (auth, no remote, etc.), report the error verbatim — do not invent fallback flows.
 - The provenance script reads transcripts only; it never modifies `~/.claude`, and it needs `rg` (falls back to `grep`) and Python 3.9 or newer.
