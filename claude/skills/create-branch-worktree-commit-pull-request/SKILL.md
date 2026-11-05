@@ -1,6 +1,6 @@
 ---
 name: create-branch-worktree-commit-pull-request
-description: Get changes into a PR in one shot. Creates a new branch (named by the user or inferred from the session's scope of work) in a new git worktree, switches the session into it, then either (1) sweeps the uncommitted changes under the current directory into the worktree, or (2) does the work described in the invocation prompt inside the worktree — and in both cases commits via /modular-commits and opens a PR via /create-pr against `main` or the branch the user names. Use when the user invokes /create-branch-worktree-commit-pull-request, or asks to "put these changes on a new branch and open a PR", "sweep my changes into a PR", or "do X in a worktree and open a PR".
+description: Get changes into a PR in one shot. Creates a new branch (named by the user or inferred from the session's scope of work) in a new git worktree via `git worktree add` and works there by absolute path without moving the session's working directory, then either (1) sweeps the uncommitted changes under the current directory into the worktree, or (2) does the work described in the invocation prompt inside the worktree — and in both cases commits via /modular-commits and opens a PR via /create-pr against `main` or the branch the user names. Use when the user invokes /create-branch-worktree-commit-pull-request, or asks to "put these changes on a new branch and open a PR", "sweep my changes into a PR", or "do X in a worktree and open a PR".
 ---
 
 # Create Branch, Worktree, Commit, Pull Request
@@ -12,7 +12,7 @@ Two modes, one protocol:
 
 If there are both uncommitted changes in the current directory *and* work instructions, carry the changes over (§3) and then do the work on top of them (§4). Everything ends up in the same PR.
 
-The skill is non-interactive by default. Only stop to ask when something below explicitly says to.
+The skill is fire-and-forget: the user invokes it and reviews the PR later. Run it end to end without the user's intervention. Only stop to ask when something below explicitly says to, or when a genuine question or something important comes up (ambiguous instructions, unrelated changes in the sweep, a conflict, failing tests). Never ask the user to change directories, switch sessions or approve a worktree switch.
 
 ## 1. Gather inputs
 
@@ -45,9 +45,15 @@ git -C "$MAIN" worktree add -b "$BRANCH" "$WT" "$BASE"
 
 If the worktree path already exists, pick a new suffix rather than reusing it.
 
-Then **switch the session into the worktree** with the `EnterWorktree` tool, passing `path: "$WT"` (load it via `ToolSearch` with `select:EnterWorktree` if it is deferred). If that tool is unavailable or rejects the path, fall back to prefixing every shell command with `cd "$WT" &&` and using absolute paths under `$WT` for every file read and edit.
+**Do not switch the session into the worktree.** Do not call `EnterWorktree` / `ExitWorktree`, do not use Claude Code's native worktree creation, and do not try to change the session's working directory — those prompt the user and break the fire-and-forget flow. The session's pwd stays where it is; the worktree is addressed by absolute path instead:
 
-From here on, **all** work happens in the worktree: every file edit, test run, and commit. Never touch the original checkout again except in §3 to move changes out of it. Tell the user the branch name and worktree path.
+- **Shell state does not persist between Bash calls**, so the variables above are gone after this step. Resolve `$WT`, `$START`, `$MAIN` and `$BRANCH` to literal absolute paths/names once and write those literals into every later command.
+- **Git:** always `git -C <WT> …`. Never a bare `git` that would act on the original checkout.
+- **File reads and edits:** absolute paths under `<WT>` with the Read/Edit/Write tools.
+- **Other commands** (tests, lint, build, package managers): prefer the tool's own directory flag (`npm --prefix`, `yarn --cwd`, `make -C`, `xcodebuild -project <WT>/…`, `swift test --package-path`); otherwise run them in a subshell, `(cd <WT> && …)`, so the session's directory never changes.
+- **Sub-skills and subagents** (`modular-commits`, `create-pr`, any Agent): tell them the worktree's absolute path and that every git and file operation must target it via `git -C` and absolute paths.
+
+From here on, **all** work happens in the worktree: every file edit, test run, and commit. Never touch the original checkout again except in §3 to move changes out of it. Tell the user the branch name and worktree path in a single line and keep going — no confirmation needed.
 
 ## 3. Carry over uncommitted changes (if any)
 
@@ -78,11 +84,11 @@ Carry out the work instructions inside the worktree, applying the usual standard
 
 ## 5. Commit
 
-Invoke the `modular-commits` skill from inside the worktree to commit **all** changes (carried-over and newly made). Never run `git commit` directly. Afterwards `git status` in the worktree must be clean.
+Invoke the `modular-commits` skill against the worktree (every git command as `git -C <WT> …`) to commit **all** changes (carried-over and newly made). Never run `git commit` directly. Afterwards `git -C <WT> status` must be clean.
 
 ## 6. Open the PR
 
-Invoke the `create-pr` skill from inside the worktree. Pass the base branch from §1 if it isn't `main`, plus any title, description, or draft override the user gave. `create-pr` pushes the branch and opens the PR — invoking this skill is the user's authorization for that push.
+Invoke the `create-pr` skill against the worktree (every git/`gh` command run with `git -C <WT>` or from `(cd <WT> && …)`, so it picks up the worktree's branch, not the original checkout's). Pass the base branch from §1 if it isn't `main`, plus any title, description, or draft override the user gave. `create-pr` pushes the branch and opens the PR — invoking this skill is the user's authorization for that push.
 
 ## 7. Report
 
@@ -91,6 +97,9 @@ Tell the user: the PR URL, the branch, the worktree path, the commits made (subj
 ## Anti-patterns
 
 - Editing files or committing in the original checkout instead of the worktree.
+- Calling `EnterWorktree`, using Claude Code's native worktree flow, or asking the user to `cd` / switch the session's directory. Address the worktree by absolute path instead.
+- Relying on shell variables from an earlier Bash call; they don't persist.
+- Pausing for confirmation on routine steps. Ask only for genuine questions or something important.
 - Sweeping changes from outside the current directory, or silently sweeping unrelated work.
 - Dropping the stash before the apply succeeded, or leaving the user's changes stranded in a stash after a failure.
 - Reusing an existing branch or worktree that the user didn't name.
