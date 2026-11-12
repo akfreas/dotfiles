@@ -114,6 +114,38 @@ export PATH="/opt/homebrew/bin:$PATH"
 
 # Source forgit plugin (requires fzf)
 [ -f /opt/homebrew/opt/forgit/share/forgit/forgit.plugin.zsh ] && source /opt/homebrew/opt/forgit/share/forgit/forgit.plugin.zsh
+
+# gco: forgit checkout (fzf picker with no args, `git checkout "$@"` with args).
+# If the branch is already checked out in another worktree, offer to cd there.
+unalias gco 2>/dev/null
+gco() {
+    local checkout=(git checkout)
+    (( $+functions[forgit::checkout::commit] )) && checkout=(forgit::checkout::commit)
+
+    # No args: interactive fzf picker, leave the terminal untouched.
+    (( $# == 0 )) && { "${checkout[@]}"; return $?; }
+
+    local errfile rc err wt_path key
+    errfile=$(mktemp)
+    "${checkout[@]}" "$@" 2> >(tee "$errfile" >&2)
+    rc=$?
+    sleep 0.05  # let the tee process substitution flush
+    err=$(<"$errfile")
+    rm -f "$errfile"
+    (( rc == 0 )) && return 0
+
+    wt_path=$(print -r -- "$err" | sed -nE "s/.*is already (used|checked out) (by|at) worktree at '([^']+)'.*/\3/p" | head -n1)
+    [[ -z "$wt_path" ]] && return $rc
+
+    print -n "This branch is checked out at $wt_path, press enter to switch, esc to quit? "
+    read -rs -k 1 key
+    print
+    if [[ "$key" == $'\n' || "$key" == $'\r' ]]; then
+        cd "$wt_path"
+    else
+        return $rc
+    fi
+}
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 
