@@ -330,6 +330,22 @@ def session_line(s):
     return f"- `{s['session_id']}` {when}{flag_txt} {title}"
 
 
+def resume_dir(s):
+    """The directory `claude --resume` must run from: the cwd whose encoding names the transcript's project directory."""
+    if s["transcript"]:
+        project = os.path.basename(os.path.dirname(s["transcript"]))
+        for cwd, _ in s["cwds"].most_common():
+            if re.sub(r"[/.]", "-", cwd) == project:
+                return cwd
+    return s["primary_cwd"] or s["primary_root"] or "?"
+
+
+def resume_blocks(s):
+    """Two fenced blocks per session: a copyable resume command, then the bare session ID."""
+    return ["```", f"cd {resume_dir(s)} && claude --resume {s['session_id']}", "```", "",
+            "```", s["session_id"], "```", ""]
+
+
 def to_markdown(result):
     out = ["<details>", "<summary>Claude Code sessions</summary>", ""]
     head = f"Host `{result['host']}`."
@@ -353,6 +369,8 @@ def to_markdown(result):
             bits.append("worktree removed")
         elif w["currently_checked_out_here"]:
             bits.append("branch checked out here now")
+        for s in members:
+            out += resume_blocks(s)
         out.append(f"`{path}`" + (f" ({', '.join(bits)})" if bits else ""))
         for s in members:
             out.append(session_line(s))
@@ -360,6 +378,8 @@ def to_markdown(result):
         out.append("")
     rest = [s for s in result["sessions"] if s["session_id"] not in placed]
     if rest:
+        for s in rest:
+            out += resume_blocks(s)
         out.append("Mention the branch without having it checked out")
         for s in rest:
             out.append(session_line(s) + f", in `{s['primary_root'] or '?'}`")

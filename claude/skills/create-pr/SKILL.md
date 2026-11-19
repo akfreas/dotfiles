@@ -92,6 +92,7 @@ What it does, so you can explain it or debug it:
 - Searches every transcript under `~/.claude/projects/` — all project directories, not just the current checkout's, because worktree sessions live under their own directory — for the branch name with `rg`, and keeps only transcripts modified on or after the minted time.
 - For each matching session it collects the session ID, the time range, the AI or custom title (falling back to the first prompt or slash command), the working directories, whether the branch was actually checked out there or merely mentioned, whether it was driven through Remote Control (a `bridge-session` entry), whether it ran from the desktop app or the SDK, how many subagent transcripts it has, and whether its transcript sits under a different project directory than its working directory suggests.
 - Groups sessions by worktree. The worktrees are the git toplevels of every directory a session had the branch checked out in, including worktrees that no longer exist (marked "worktree removed"), plus any live worktree that has the branch checked out now.
+- Before each group's heading and session list, emits two fenced code blocks per session in that group: a copyable `cd <dir> && claude --resume <id>` command, then the bare session ID. `<dir>` is the working directory whose encoded path names the project directory the transcript lives in, because `claude --resume` only finds sessions under the current directory's project directory; for a session that only mentioned the branch this is where it ran, not the branch's worktree.
 - Prints the hostname, because transcripts only exist on the machine the session ran on. If a session was run on another computer (for example through `run-remote-agent`), it will not appear here, and the hostname tells future-you which machine's transcripts you are looking at.
 
 Rules for the block:
@@ -161,7 +162,7 @@ Changes
 
 Feature, with the provenance block as the script prints it:
 
-```
+````
 Add the ability to pinch-to-zoom using gestures on the camera, much like the system camera.
 
 - Added gesture recognizer to `CameraView` that hooks into camera controls model
@@ -172,18 +173,50 @@ Add the ability to pinch-to-zoom using gestures on the camera, much like the sys
 
 Host `Alex-F-MacBook-Pro.local`. Branch created 2026-10-12 21:23 (reflog: branch: Created from HEAD); transcripts searched from then until 2026-10-17 21:45. Resume a session with `cd <worktree> && claude --resume <id>`; its transcript is `~/.claude/projects/<worktree path with / and . replaced by ->/<id>.jsonl` on the host unless noted.
 
+```
+cd /Users/akfreas/github/EncameraApp/Encamera && claude --resume b344b4f5-97f9-4298-891f-c4bdecdee457
+```
+
+```
+b344b4f5-97f9-4298-891f-c4bdecdee457
+```
+
+```
+cd /Users/akfreas/github/EncameraApp/Encamera && claude --resume 554ca5f0-ab7d-4f1a-b461-f5d599aec4b8
+```
+
+```
+554ca5f0-ab7d-4f1a-b461-f5d599aec4b8
+```
+
 `/Users/akfreas/github/EncameraApp/Encamera`
 - `b344b4f5-97f9-4298-891f-c4bdecdee457` 2026-10-13 06:36 to 13:57 Pinch-to-zoom gesture on CameraView
 - `554ca5f0-ab7d-4f1a-b461-f5d599aec4b8` 2026-10-16 13:21 to 15:08 (remote control; 1 subagent) Zoom indicator follows gesture
 
+```
+cd /Users/akfreas/github/EncameraApp/Encamera-key-picker && claude --resume 357b0f18-926d-4ef3-b728-7f6e350705f7
+```
+
+```
+357b0f18-926d-4ef3-b728-7f6e350705f7
+```
+
 `/Users/akfreas/github/EncameraApp/Encamera-key-picker` (worktree removed)
 - `357b0f18-926d-4ef3-b728-7f6e350705f7` 2026-10-15 15:55 to 18:03 (also worked in `/Users/akfreas/github/EncameraApp/Encamera`) CameraZoomControlIndicator date label
+
+```
+cd /Users/akfreas/github/EncameraApp/Encamera-enc484 && claude --resume c21e41df-d454-4c39-819e-d86174e79280
+```
+
+```
+c21e41df-d454-4c39-819e-d86174e79280
+```
 
 Mention the branch without having it checked out
 - `c21e41df-d454-4c39-819e-d86174e79280` 2026-10-12 18:20 to 22:02 Camera controls model review, in `/Users/akfreas/github/EncameraApp/Encamera-enc484`
 
 </details>
-```
+````
 
 ### 7. Create the PR
 
