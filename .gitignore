@@ -2,3 +2,14 @@
 **/IB\ Support
 Xcode/UserData/IB Support/
 .DS_Store
+claude/skills/synced/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Locally installed binaries
+bin/
+
+# Deleted skills
+claude/skills/.trash/
