@@ -51,11 +51,19 @@ Each prompt is written from scratch for its unit. Not a template fill, not "cont
 - **Carry-forward from the previous unit.** "PASGAI-190 is already committed as 2814427; `services/sharepoint_graph.py` now exposes `GraphSearchHit` and `search_hits(...)` — read it for exact signatures." This is the single highest-value paragraph in the prompt.
 - **Operational traps.** The commands that actually work, the ones that look right and aren't, the known-failing baseline it should not try to fix, environment quirks. It cannot discover these cheaply and will waste half its context finding them.
 - **Scope fence and non-goals.** What is deliberately out of scope, and what belongs to a later unit.
-- **Definition of done.** Tests to run and the expected result, lint, and — **mandatory** — commit exclusively via `/modular-commits` (invoke the skill, do not run `git commit` directly; commit only its own files; tests green *before* committing), do not push.
+- **Definition of done.** The exact test command(s) scoped to the unit's own tests (see "Test scope" below) and the expected result, lint, and — **mandatory** — commit exclusively via `/modular-commits` (invoke the skill, do not run `git commit` directly; commit only its own files; its tests green *before* committing), do not push. The prompt must explicitly say: "Run ONLY the unit tests you created or modified. Do NOT run the full test suite. Do NOT run UI tests."
 - **Blocker protocol.** If the prescribed approach doesn't work, stop and report — do not improvise, especially anything that changes persisted data, deletes tests, or weakens an assertion. Out-of-scope bugs get reported, not fixed inline.
-- **The final-report contract.** Its last message is all that survives. Specify the shape: files changed; commit hashes and subjects; the exact test result line; lint result; one line per acceptance criterion naming the test that proves it; the public API/handoff surface the next unit will consume; deviations and open concerns.
+- **The final-report contract.** Its last message is all that survives. Specify the shape: files changed; commit hashes and subjects; the exact test command run and its result line (scoped to the unit's own tests); lint result; one line per acceptance criterion naming the test that proves it; the public API/handoff surface the next unit will consume; deviations and open concerns.
 
 Use `general-purpose` for work that mutates the repo, `Explore` for read-only investigation.
+
+#### Test scope
+
+Each subagent runs **only the unit tests it created or modified** for its unit — filtered to those test files/classes/cases (e.g. `-only-testing:`, `pytest path::test`, `jest path`, `--filter`). It does **not** run the full test suite before reporting; that is excessive and slows the whole chain down.
+
+**UI tests are off by default.** Do not run UI tests unless the user explicitly asks for them, or the unit of work itself is UI-test centric (e.g. the Linear issue/ticket is about writing or fixing UI tests). In that case, run only the UI tests that unit created or modified — never the whole UI suite.
+
+Never instruct a subagent to "run all tests", "run the full suite", or "make sure everything is green" unless the user explicitly asked for a full-suite run.
 
 ### 4. Act on the report
 
@@ -82,3 +90,4 @@ This strategy is what makes overnight and multi-hour runs viable. When the user 
 - Doing the unit yourself in the main thread because delegating feels like overhead. The overhead is the point.
 - A prompt that restates a plan which exists nowhere else.
 - Summarizing a spec into the prompt instead of pasting it.
+- Running the full test suite (or all UI tests) at the end of a unit. Subagents run only the unit tests they created or modified; UI tests only when explicitly asked or when the unit is UI-test centric.
