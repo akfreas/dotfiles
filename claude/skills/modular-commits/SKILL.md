@@ -17,6 +17,7 @@ Use this skill when the user asks to commit changes. Produce small, focused comm
 - **Match the canonical style.** Mirror the format shown in **Commit message style** below — imperative mood, capitalized first word, no trailing period, concise but descriptive. Do not read back over the git history to infer a style; the canonical example is the source of truth.
 - **One line only.** The message is a single imperative subject line. **No extended description body.** Do not add bullet lists, "why" paragraphs, test plans, or footers. That content is noise.
 - **Do not push to the remote.** This is a commit-only operation. Commits need to be reviewed by a human before they are pushed.
+- **Intermediate commits need not build.** Split commits along logical lines, not along "does this compile on its own" lines. Do **not** build, typecheck or test between commits — that is slow and is not required. Only the final state (the tip after the last commit) must build, and it is verified **once**, after all commits land (see **Build and repair** below).
 
 ## Commit message style
 
@@ -56,6 +57,8 @@ Replace UiObject2.click() with coordinate-based taps for CI emulator reliability
 
    Do not run `git log` to derive message style — use the canonical **Commit message style** below.
 
+   Also record the starting point: `START=$(git rev-parse HEAD)`. Every commit after `START` belongs to this session and is the only history the repair step may rewrite.
+
 2. **Plan the commits.** Group changes into the smallest coherent units. If everything belongs together, one commit is fine. Otherwise, stage and commit each group separately.
 
 3. **Stage deliberately.** Use `git add <path>` for specific files. Avoid `git add -A` / `git add .` — they pull in untracked secrets, build artifacts, or stray edits. Use `git add -p` when a single file holds multiple logical changes.
@@ -66,9 +69,26 @@ Replace UiObject2.click() with coordinate-based taps for CI emulator reliability
 
 6. **Verify.** Run `git status` and `git log -n 1 --pretty=fuller` to confirm the commit landed with the correct author and no stray trailers.
 
-7. **Repeat** for each remaining logical group.
+7. **Repeat** for each remaining logical group. Do not build between commits.
 
-8. **Summarize.** After all commits land, print a tree-style summary of every commit made in this session (oldest → newest). See **Output format** below.
+8. **Build and repair.** Once all commits have landed, build the relevant targets once at the tip. See **Build and repair** below.
+
+9. **Summarize.** After all commits land, print a tree-style summary of every commit made in this session (oldest → newest). See **Output format** below.
+
+## Build and repair
+
+Run this once, after the last commit, never between commits.
+
+1. **Pick the relevant targets.** Choose them from the files the session's commits touched (`git diff --name-only $START..HEAD`) and the project's own build tooling: the Xcode scheme(s) or SwiftPM package that own the changed Swift files, the workspace/package whose `build` or `typecheck` / `tsc --noEmit` script covers the changed TS/JS, the Gradle module(s) for changed Kotlin/Java, `cargo check` for the affected crate, and so on. Prefer the narrowest command that compiles everything changed (one module or package instead of the whole monorepo). Prefer a project skill, `CLAUDE.md` or `Makefile`/`package.json` script if one names the build command. Build only; do not run test suites unless the user asks.
+2. **No build system, no build.** If the changes are only docs, config, dotfiles, or other files with nothing to compile, skip this step and say so in the summary.
+3. **Build.** Run the build command(s). If it succeeds, move on to the summary.
+4. **Repair on failure.** Fix the error in the working tree, then fold the fix into the commit it belongs to — the one that introduced the broken code, found with `git log --oneline $START..HEAD -- <file>` or `git blame` on the offending line:
+   - `git add <fixed paths>`
+   - `git commit --fixup=<hash-of-owning-commit>`
+   - `GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash $START` (the no-op sequence editor keeps the rebase non-interactive)
+   If the fix is genuinely its own logical change (not a correction of one of the session's commits), commit it as a new modular commit instead of a fixup.
+5. **Rebuild** and repeat step 4 until the tip builds. If the rebase hits a conflict, or the failure is not caused by this session's changes (it also fails at `$START`), stop and report it to the user rather than rewriting further.
+6. Rewrite only commits after `$START`. Never rebase past `$START` or touch commits that were already pushed.
 
 ## Output format
 
@@ -117,7 +137,8 @@ If a commit touches no files (empty commit), print the header line followed by `
 - Adding `Co-Authored-By: Claude …` or any "Generated with Claude Code" line.
 - Writing a multi-paragraph body explaining what the diff already shows.
 - Bundling unrelated changes "to save a commit."
-- Using `--amend` to retrofit changes into a prior commit without the user asking.
+- Using `--amend` to retrofit changes into a prior commit without the user asking. (Fixup commits squashed onto this session's own commits during **Build and repair** are the exception.)
+- Building, typechecking or testing after every commit to make each one buildable on its own.
 - Skipping hooks with `--no-verify`.
 - Force-pushing or otherwise rewriting shared history without explicit instruction.
 
@@ -129,3 +150,4 @@ If a commit touches no files (empty commit), print the header line followed by `
 - [ ] No Claude attribution anywhere
 - [ ] Author is the machine's configured git user
 - [ ] Hooks ran; commit verified with `git log`
+- [ ] Relevant targets built once at the tip, and any fix folded into its owning commit
